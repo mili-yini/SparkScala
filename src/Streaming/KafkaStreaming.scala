@@ -20,20 +20,31 @@ object KafkaStreaming {
     }
 
     // Create a StreamingContext with the given master URL
-    val conf = new SparkConf().setMaster(masterUrl).setAppName("PageViewStream")
+    val conf = new SparkConf().setMaster(masterUrl).setAppName("TestStream")
     val ssc = new StreamingContext(conf, Seconds(5))
 
     // Kafka configurations
-    val topics = Set("PageViewStream")
+    val topics = Set("topic_test1")
     //本地虚拟机ZK地址
-    val brokers = "hadoop1:9092,hadoop2:9092,hadoop3:9092"
+    val brokers = "10.121.145.24:9092"
     val kafkaParams = Map[String, String](
       "metadata.broker.list" -> brokers,
-      "serializer.class" -> "kafka.serializer.StringEncoder")
+      "serializer.class" -> "kafka.serializer.StringEncoder",
+      "zookeeper.connect" -> "10.121.145.24:2181",
+       "group.id" -> "spark-streaming-test",
+    "zookeeper.connection.timeout.ms" -> "30000")
 
     // Create a direct stream
     val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
 
+     kafkaStream.foreachRDD(rdd => {
+       rdd.foreach{line=>
+        println(line._2)
+       }
+      //val data = JSONObject.fromObject(line._2)
+      //Some(data)
+    })
+    /*
     val events = kafkaStream.flatMap(line => {
       val data = JSONObject.fromObject(line._2)
       Some(data)
@@ -65,7 +76,7 @@ object KafkaStreaming {
           StatTable.flushCommits()
         })
       })
-    })
+    })*/
     ssc.start()
     ssc.awaitTermination()
 
