@@ -1,19 +1,15 @@
-package Streaming
+package prod
 
-import org.apache.spark.SparkConf
+import Component.HBaseUtil.HbaseTool
 import kafka.serializer.StringDecoder
-import net.sf.json.JSONObject
-import org.apache.hadoop.hbase.client.{HTable, Put}
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat
-import org.apache.hadoop.hbase.util.Bytes
-import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+
 /**
   * Created by sunhaochuan on 2016/12/16.
   */
-object KafkaStreaming {
+object Streaming {
   def main(args: Array[String]): Unit = {
     var masterUrl = "local[2]"
     if (args.length > 0) {
