@@ -21,7 +21,7 @@ object Streaming {
     val ssc = new StreamingContext(conf, Seconds(5))
 
     // Kafka configurations
-    val topics = Set("kafka-test02")
+    val topics = Set(args(1))//table name
     //本地虚拟机ZK地址
     val brokers = "10.121.145.144:9092"
     val kafkaParams = Map[String, String](
@@ -38,7 +38,8 @@ object Streaming {
        rdd.foreach{line=> {
          println(line._2)
          val tableName = "PageViewStream"
-         HbaseTool.putValue(tableName, "ID12345", "info", Array(("id", line._2)))
+         val rowKey = args(2)
+         HbaseTool.putValue(tableName, rowKey, "info", Array(("id", line._2)))
 //         val s=HbaseTool.getValue(tableName,"1","info",Array("id"))
 //         println(s)
        }
