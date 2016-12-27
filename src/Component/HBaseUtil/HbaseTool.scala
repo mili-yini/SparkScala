@@ -68,10 +68,9 @@ object HbaseTool extends Logging with Serializable{
       val strdate=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
       println("时间"+strdate+"写入Hbase"+ rowKey)
     })
-    println("s")
-      table.put(new_row)
-//    table.close()
-    println("aaaas")
+    println("start to put value")
+    table.put(new_row)
+    println("finished to put the value")
 
   }
   def deleteColumn(tableName:String,rowKey:String, family:String,column:Array[(String)]): Unit ={

@@ -41,7 +41,7 @@ object Streaming {
       "serializer.class" -> "kafka.serializer.StringEncoder",
       "zookeeper.connect" -> zookeeper_location,
        "group.id" -> "spark-streaming-test",
-    "zookeeper.connection.timeout.ms" -> "30000")
+      "zookeeper.connection.timeout.ms" -> "30000")
 
     // Create a direct stream
     val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
@@ -53,8 +53,8 @@ object Streaming {
          if (args.length > 4) {
            tableName = args(4);
          }
-         //val rowKey = args(2)
-         //HbaseTool.putValue(tableName, rowKey, "info", Array(("id", line._2)))
+         var rowKey = "test";
+         HbaseTool.putValue(tableName, rowKey, "info", Array(("id", line._2)))
 
 
        })
