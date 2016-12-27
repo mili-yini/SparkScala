@@ -18,6 +18,45 @@ import java.util.ArrayList;
  * Created by zhanglin5 on 2016/12/21.
  */
 public class DocumentAdapter {
+    static public CompositeDoc FromJsonToCompositeDoc(String json_str) {
+        JSONObject one_json;
+        try {
+            one_json = JSONObject.fromObject(json_str);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return  null;
+        }
+        CompositeDoc compositeDoc = new CompositeDoc();
+        MediaDocInfo media_doc = new MediaDocInfo();
+        //mast have
+        String publish_date = one_json.get("publish_date").toString();
+        String source_id = one_json.get("source_id").toString();
+        String title = one_json.get("title").toString();
+        String info_id = one_json.get("info_id").toString();
+        String url = one_json.get("url").toString();
+
+        media_doc.setSource(source_id);
+        media_doc.setName(title);
+        media_doc.setPlay_url(url);
+        media_doc.setId(info_id);
+        // not have
+        if (one_json.get("modify_date") != null) {
+            String modify_date = one_json.get("modify_date").toString();
+            media_doc.setUpdate_timestamp(0);   // TODO
+        }
+        if (one_json.get("description") != null) {
+            String description = one_json.get("description").toString();
+            compositeDoc.setDescription(description);
+        }
+        if (one_json.get("category_id") != null) {
+            String category_id = one_json.get("category_id").toString();
+            media_doc.setCategory_name(category_id);
+        }
+        compositeDoc.setMedia_doc_info(media_doc);
+
+        return compositeDoc;
+    }
+
     public ArrayList<CompositeDoc> FromJsonToComposite(String  json_str) {
         JSONObject one_json = JSONObject.fromObject(json_str);
         JSONObject provider = JSONObject.fromObject(one_json.get("provider").toString());

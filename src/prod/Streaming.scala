@@ -5,7 +5,9 @@ import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-
+import CompositeDocProcess.DocumentAdapter
+import pipeline.CompositeDoc
+import javax.naming.Context
 /**
   * Created by sunhaochuan on 2016/12/16.
   */
@@ -48,14 +50,22 @@ object Streaming {
 
      kafkaStream.foreachRDD(rdd => {
        rdd.foreach(line => {
-         println(line._2)
-         var tableName = "PageViewStream"
-         if (args.length > 4) {
-           tableName = args(4);
-         }
-         var rowKey = "test";
-         HbaseTool.putValue(tableName, rowKey, "info", Array(("id", line._2)))
+         System.err.println(line._2.length)
 
+         var doc: CompositeDoc = DocumentAdapter.FromJsonToCompositeDoc(line._2)
+         if (doc != null) {
+
+
+           var context: Context = null;
+           var serialized_string: String = DocProcess.CompositeDocSerialize.Serialize(doc, context);
+           var tableName = "PageViewStream"
+           if (args.length > 4) {
+             tableName = args(4);
+           }
+           //HbaseTool.putValue(tableName, doc.media_doc_info.id, "info", Array(("content", serialized_string)))
+         } else {
+           System.err.println("Failed to parse :" + line._2)
+         }
 
        })
      })
