@@ -1,6 +1,8 @@
 package Component.nlp;
 
+import pipeline.CompositeDoc;
 import scala.collection.immutable.Range;
+import shared.datatypes.ItemFeature;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -15,10 +17,36 @@ public class Text implements Serializable {
     List<Sentence> sentences=new ArrayList<Sentence>();
     Map<String,Double> wordTextRank=new HashMap<String,Double>();
     Map<String,Double> tf=new HashMap<String,Double>();
-    List<String[]> spliteSentences=new ArrayList<String[]>();
-    String[] spliteTitle=null;
+    List<String> spliteSentences=new ArrayList<String>();
+    String spliteTitle=null;
     List<String> keyWords=new ArrayList<String>();
     BigInteger simHash=new BigInteger("-1");
+    public void addComopsticDoc(CompositeDoc doc){
+        //添加textrank
+        for(String word:wordTextRank.keySet()){
+            short value=(short)(wordTextRank.get(word)*100);
+            ItemFeature iF=new ItemFeature();
+            iF.setWeight(value);
+            iF.setName(word);
+            doc.feature_list.add(iF);
+        }
+        //添加tf
+        for(String word:tf.keySet()){
+            short value=(short)(wordTextRank.get(word)*100);
+            ItemFeature iF=new ItemFeature();
+            iF.setWeight(value);
+            iF.setName(word);
+            doc.text_rank.add(iF);
+        }
+       //添加分词后的正文句子
+        for(String sentence:this.spliteSentences){
+            doc.body_words.add(sentence);
+        }
+        //添加分词后的标题
+        doc.title_words.add(this.spliteTitle);
+        //添加simhash
+        doc.media_doc_info.setName_fingerprint(this.simHash.intValue());
+    }
     public void getTF(){
         for(Sentence sentence:this.sentences){
             for(Word word:sentence.getWords()){

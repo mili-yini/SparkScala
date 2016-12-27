@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  */
 public class Sentence implements Serializable {
       private List<Word> words=new ArrayList<Word>();
-    String[] spliteSentence=null;
+    String spliteSentence=null;
     public List<Word> getWords() {
         return words;
     }
@@ -58,7 +58,7 @@ public class Sentence implements Serializable {
             words.add(new Word(word.getName(),word.getNatrue().natureStr,false,""));
             sb.append(word.getName()).append(" ");
         }
-        spliteSentence=sb.toString().split(" ");
+        spliteSentence=sb.toString();
 
     }
     public String toString(){

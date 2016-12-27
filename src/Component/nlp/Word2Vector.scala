@@ -2,6 +2,7 @@ package Component.nlp
 
 import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.rdd.RDD
+import pipeline.CompositeDoc
 
 import collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
@@ -24,8 +25,8 @@ object Word2Vector {
     }
     result.toArray
   }
-  def getWordVector(rdd:RDD[Text]):Word2VecModel={
-    val input = rdd.flatMap(_.spliteSentences).map(_.toSeq)
+  def getWordVector(rdd:RDD[CompositeDoc]):Word2VecModel={
+    val input = rdd.flatMap(_.body_words.).map(_.split(" ").toSeq)
     val word2vec = new Word2Vec()
     word2vec.setMinCount(1)
     val model = word2vec.fit(input)
