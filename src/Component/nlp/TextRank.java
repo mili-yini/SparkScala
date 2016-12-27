@@ -20,9 +20,8 @@ public class TextRank {
             Set<String> words=new HashSet<String>();
             for(Word word:sentence.getWords()){
                  String nature=word.getNature();
-                 String entity=word.getEntityType();
                  boolean flag1=nature.equals("nr")||nature.equals("ns")||nature.equals("nz");
-                 boolean flag2=!entity.equals("O")&&entity.length()>0;
+
                 if(flag1){
                     words.add(word.getText());
                 }

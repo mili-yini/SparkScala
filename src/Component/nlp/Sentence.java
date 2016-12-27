@@ -1,6 +1,6 @@
 package Component.nlp;
 
-import edu.stanford.nlp.ie.crf.CRFClassifier;
+
 import org.ansj.domain.Term;
 import org.ansj.library.UserDefineLibrary;
 import org.ansj.splitWord.analysis.NlpAnalysis;
@@ -20,8 +20,7 @@ import java.util.regex.Pattern;
  * Created by lujing1 on 2016/12/19.
  */
 public class Sentence implements Serializable {
-    static CRFClassifier ner = CRFClassifier.getClassifierNoExceptions("chinese.misc.distsim.crf.ser.gz");
-    private List<Word> words=new ArrayList<Word>();
+      private List<Word> words=new ArrayList<Word>();
     String[] spliteSentence=null;
     public List<Word> getWords() {
         return words;
@@ -60,13 +59,7 @@ public class Sentence implements Serializable {
             sb.append(word.getName()).append(" ");
         }
         spliteSentence=sb.toString().split(" ");
-        Map<String,String> wordEntity=parserEntityResult(ner.classifyToString(sb.toString().trim()));
-        for(Word word:words){
-            String tag=wordEntity.get(word.getText());
-            if(tag!=null){
-                word.setEntityType(tag);
-            }
-        }
+
     }
     public String toString(){
         StringBuffer sb=new StringBuffer();

@@ -1,7 +1,10 @@
 package Component.nlp;
 
+import scala.collection.immutable.Range;
+
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -13,6 +16,9 @@ public class Text implements Serializable {
     Map<String,Double> wordTextRank=new HashMap<String,Double>();
     Map<String,Double> tf=new HashMap<String,Double>();
     List<String[]> spliteSentences=new ArrayList<String[]>();
+    String[] spliteTitle=null;
+    List<String> keyWords=new ArrayList<String>();
+    BigInteger simHash=new BigInteger("-1");
     public void getTF(){
         for(Sentence sentence:this.sentences){
             for(Word word:sentence.getWords()){
@@ -34,7 +40,8 @@ public class Text implements Serializable {
         }
         return result;
     }
-    public Text(String text) throws IOException {
+    public Text(String title,String text) throws IOException {
+        //处理正文
         String[] ss=text.split(dot);
         for(String sentence:ss){
             Sentence sen=new Sentence(sentence);
@@ -43,6 +50,15 @@ public class Text implements Serializable {
         }
         wordTextRank=TextRank.getTextRank(this);
         getTF();
+        this.simHash=SimHash.simHash(this.tf,128);
+        //处理title
+        Sentence sen=new Sentence(title);
+        spliteTitle=sen.spliteSentence;
+        for(Word word:sen.getWords()){
+            String nature=word.getNature();
+            boolean flag1=nature.equals("nr")||nature.equals("ns")||nature.equals("nz");
+            keyWords.add(word.getText());
+        }
     }
     public String toValue(){
         StringBuffer sb=new StringBuffer();

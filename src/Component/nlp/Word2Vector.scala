@@ -26,7 +26,6 @@ object Word2Vector {
   }
   def getWordVector(rdd:RDD[Text]):Word2VecModel={
     val input = rdd.flatMap(_.spliteSentences).map(_.toSeq)
-    input.foreach(println(_))
     val word2vec = new Word2Vec()
     word2vec.setMinCount(1)
     val model = word2vec.fit(input)
