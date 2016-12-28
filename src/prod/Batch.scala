@@ -15,6 +15,7 @@ import org.apache.spark.rdd.RDD
 import org.bson.BSONObject
 import com.mongodb.hadoop.{BSONFileInputFormat, BSONFileOutputFormat, MongoInputFormat, MongoOutputFormat}
 import com.mongodb.hadoop.io.MongoUpdateWritable
+import component.HBaseUtil.HbashBatch
 import net.sf.json.JSONObject
 //import Component.nlp.Text
 
@@ -34,29 +35,26 @@ object Batch {
       classOf[MongoInputFormat],  // InputFormat
       classOf[Object],            // Key type
       classOf[BSONObject])// Value type
-    documents.foreach( line => {
+
+    var tableName = "PageViewStream"
+    if (args.length > 4) {
+      tableName = args(4);
+    }
+
+    var processedRDD = documents.map(line => {
       var doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2.toString());
+      var serialized_string: String = null;
+      var id :String = null;
       if (doc != null) {
-        //val text=new Text(doc.media_doc_info.name,doc.description);
-        //text.addComopsticDoc(doc);
         var context: Context = null;
-        var serialized_string: String = DocProcess.CompositeDocSerialize.Serialize(doc, context);
-        var tableName = "PageViewStream"
-        if (args.length > 4) {
-          tableName = args(4);
-        }
-        //val dd:CompositeDoc = DocProcess.CompositeDocSerialize.DeSerialize(serialized_string, context);
-        //println(dd.media_doc_info.id);
-        HbaseTool.putValue(tableName, doc.media_doc_info.id, "info", Array(("content", serialized_string)))
+        serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context);
+        id = doc.media_doc_info.id
       } else {
         System.err.println("Failed to parse :" + line._2)
       }
-
-
-
-
-    })
-
+      (id, serialized_string)
+    }).filter( x  => x._1 != null && x._2 != null)
+    HbashBatch.BatchWriteToHBase(processedRDD, tableName, "info", "content")
 
 
   }
