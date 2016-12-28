@@ -15,7 +15,8 @@ import org.apache.spark.rdd.RDD
 import org.bson.BSONObject
 import com.mongodb.hadoop.{BSONFileInputFormat, BSONFileOutputFormat, MongoInputFormat, MongoOutputFormat}
 import com.mongodb.hadoop.io.MongoUpdateWritable
-import component.HBaseUtil.HbashBatch
+import Component.HBaseUtil.HbashBatch
+
 import net.sf.json.JSONObject
 //import Component.nlp.Text
 
@@ -24,11 +25,15 @@ import net.sf.json.JSONObject
   */
 object Batch {
   def main(args:Array[String]) : Unit = {
+    var masterUrl = "local"
+    if (args.length > 0) {
+      masterUrl = args(0)
+    }
     val mongoConfig = new Configuration()
     mongoConfig.set("mongo.input.uri",
       "mongodb://10.154.156.118:27017/galaxy.content_access")
-    val sparkConf = new SparkConf()
-    val sc = new SparkContext("local", "SparkExample", sparkConf)
+    val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
+    val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
 
     val documents = sc.newAPIHadoopRDD(
       mongoConfig,                // Configuration

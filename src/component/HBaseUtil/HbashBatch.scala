@@ -1,4 +1,4 @@
-package component.HBaseUtil
+package Component.HBaseUtil
 
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.{HTable, Put, Scan}
