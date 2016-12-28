@@ -12,30 +12,51 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by zhanglin5 on 2016/12/21.
  */
 public class DocumentAdapter {
-    static public CompositeDoc FromJsonToCompositeDoc(JSONObject one_json) {
+    static public CompositeDoc FromJsonToCompositeDoc(JSONObject one_json) throws ParseException {
         CompositeDoc compositeDoc = new CompositeDoc();
         MediaDocInfo media_doc = new MediaDocInfo();
         //mast have
-        String publish_date = one_json.get("publish_date").toString();
-        String source_id = one_json.get("source_id").toString();
-        String title = one_json.get("title").toString();
-        String info_id = one_json.get("info_id").toString();
-        String url = one_json.get("url").toString();
+        if (one_json.get("info_id") != null) {
+            media_doc.setId(one_json.get("info_id").toString());
+        } else {
+            return null;
+        }
+        if (one_json.get("title") != null) {
+            media_doc.setName(one_json.get("title").toString());
+        } else {
+            return null;
+        }
+        if (one_json.get("url") != null) {
+            media_doc.setPlay_url(one_json.get("url").toString());
+        } else {
+            return null;
+        }
+        if (one_json.get("publish_date") != null) {
+            String publish_date = one_json.get("publish_date").toString();
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            Date dt = new Date();
+            dt = s.parse(publish_date);
+            long t = dt.getTime();
+            media_doc.setCreate_timestamp(t);
+        }
 
-        media_doc.setSource(source_id);
-        media_doc.setName(title);
-        media_doc.setPlay_url(url);
-        media_doc.setId(info_id);
         // not have
         if (one_json.get("modify_date") != null) {
             String modify_date = one_json.get("modify_date").toString();
-            media_doc.setUpdate_timestamp(0);   // TODO
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            Date dt = new Date();
+            dt = s.parse(modify_date);
+            long t = dt.getTime();
+            media_doc.setUpdate_timestamp(t);   // TODO
         }
         if (one_json.get("description") != null) {
             String description = one_json.get("description").toString();
@@ -48,7 +69,7 @@ public class DocumentAdapter {
         compositeDoc.setMedia_doc_info(media_doc);
         return compositeDoc;
     }
-    static public CompositeDoc FromJsonStringToCompositeDoc(String json_str) {
+    static public CompositeDoc FromJsonStringToCompositeDoc(String json_str) throws ParseException {
         JSONObject one_json;
         try {
             one_json = JSONObject.fromObject(json_str);
