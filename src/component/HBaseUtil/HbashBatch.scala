@@ -31,7 +31,7 @@ object HbashBatch {
     myConf.set("hbase.client.keyvalue.maxsize","524288000");//最大500m
     myConf.set ("hbase.defaults.for.version.skip", "true")
 
-    myConf.set(TableInputFormat.INPUT_TABLE, "MissionItem")
+    myConf.set(TableInputFormat.INPUT_TABLE, tableName)
 
     val scan = new Scan()
     myConf.set(TableInputFormat.SCAN, convertScanToString(scan))

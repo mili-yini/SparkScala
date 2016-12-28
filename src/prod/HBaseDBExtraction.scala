@@ -24,8 +24,8 @@ object HBaseDBExtraction {
     var hbaseRDD : RDD[(String, String)] = HbashBatch.BatchReadHBaseToRDD(tableName, "info", "content", sc)
 
     var output_path = "/data/overseas_in/recommendation/galaxy/temp"
-    if (args.length > 1) {
-      output_path = args(1)
+    if (args.length > 2) {
+      output_path = args(2)
     }
     hbaseRDD.saveAsTextFile(output_path)
   }
