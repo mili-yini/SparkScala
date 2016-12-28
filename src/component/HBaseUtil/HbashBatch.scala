@@ -1,5 +1,8 @@
 package Component.HBaseUtil
 
+import java.text.SimpleDateFormat
+import java.util.Date
+
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.{HTable, Put, Scan}
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat
@@ -22,7 +25,8 @@ object HbashBatch {
     Base64.encodeBytes(proto.toByteArray)
   }
 
-  def BatchReadHBaseToRDD (tableName: String, family: String, column: String, sc: SparkContext) : RDD[(String, String)] = {
+  def BatchReadHBaseToRDD (tableName: String, family: String, column: String, sc: SparkContext, startRow: String = null, stopRow: String = null)
+                          : RDD[(String, String)] = {
 
     val myConf = HBaseConfiguration.create ()
     myConf.set("hbase.zookeeper.property.clientPort", "31818");
@@ -34,6 +38,10 @@ object HbashBatch {
     myConf.set(TableInputFormat.INPUT_TABLE, tableName)
 
     val scan = new Scan()
+    if (startRow != null && stopRow != null && startRow.length() > 0 && stopRow.length() > 0) {
+      scan.setStartRow(startRow.getBytes())
+      scan.setStopRow(stopRow.getBytes())
+    }
     myConf.set(TableInputFormat.SCAN, convertScanToString(scan))
     val readRDD = sc.newAPIHadoopRDD(myConf, classOf[TableInputFormat],
       classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
@@ -41,7 +49,23 @@ object HbashBatch {
 
     readRDD.map( x => x._2 )
       .map( result => ( result.getRow,  result.getValue( family.getBytes(),column.getBytes() )) )
-      .map( row => ( new String(row._1), new String(row._2) ) )
+      .map( row => ( new String(row._1), new String(row._2) ))
+  }
+
+  def BatchWriteToHBaseWithDesignRowkey ( rdd : RDD[(String, String, String)], tableName : String, family : String, column: String,
+                                                                       mappingTableName : String, mappingFamily: String, mappingColumn: String) : Int = {
+
+    var mappingKey = rdd.map(x => {
+      (x._1, x._3+x._1)
+    })
+    var newkeyValue = rdd.map(x => {
+      (x._3+x._1, x._2)
+    })
+
+    BatchWriteToHBase(newkeyValue, tableName, family, column)
+    BatchWriteToHBase(mappingKey, mappingTableName, mappingFamily, mappingColumn)
+
+    0
   }
 
   /*
@@ -61,7 +85,7 @@ object HbashBatch {
         myConf.set ("hbase.defaults.for.version.skip", "true")
       val myTable = new HTable (myConf, TableName.valueOf (tableName) )
       myTable.setAutoFlush (false, false) //关键点1
-      myTable.setWriteBufferSize (3 * 1024 * 1024) //关键点2
+      myTable.setWriteBufferSize (10 * 1024 * 1024) //关键点2
       x.foreach {y => {
         //println (y (0) + ":::" + y (1) )
         val p = {

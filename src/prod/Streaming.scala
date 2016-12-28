@@ -1,6 +1,9 @@
 package prod
 
-import Component.HBaseUtil.HbaseTool
+import java.text.SimpleDateFormat
+import java.util.Date
+
+import Component.HBaseUtil.{HbaseTool, HbashBatch}
 import kafka.serializer.StringDecoder
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
@@ -50,26 +53,54 @@ object Streaming {
     // Create a direct stream
     val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
 
-     kafkaStream.foreachRDD(rdd => {
-       rdd.foreach(line => {
-         System.err.println(line._2.length)
-         var doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2)
-         if (doc != null) {
-           //val text=new Text(doc.media_doc_info.name,doc.description);
-           //text.addComopsticDoc(doc);
-           var context: Context = null;
-           var serialized_string: String = DocProcess.CompositeDocSerialize.Serialize(doc, context);
-           var tableName = "PageViewStream"
-           if (args.length > 4) {
-             tableName = args(4);
-           }
-           HbaseTool.putValue(tableName, doc.media_doc_info.id, "info", Array(("content", serialized_string)))
-         } else {
-           System.err.println("Failed to parse :" + line._2)
-         }
+    var tableName = "GalaxyContent"
+    if (args.length > 4) {
+      tableName = args(4);
+    }
+    var family = "info"
+    if (args.length > 5){
+      family = args(5)
+    }
+    var column = "content"
+    if (args.length > 6) {
+      column = args(6)
+    }
+    var mappingTableName = "GalaxyKeyMapping"
+    if (args.length > 7) {
+      mappingTableName = args(7)
+    }
+    var mappingFamily = "info"
+    if (args.length > 8){
+      mappingFamily = args(8)
+    }
+    var mappingColumn = "OriginalKey"
+    if (args.length > 9) {
+      mappingColumn = args(9)
+    }
 
-       })
-     })
+    kafkaStream.foreachRDD(documents => {
+      var processedRDD = documents.map(line => {
+        var doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2.toString());
+        var serialized_string: String = null;
+        var id :String = null;
+        var date_prefix: String = null;
+        if (doc != null) {
+          var context: Context = null;
+          serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context);
+          id = doc.media_doc_info.id
+          val dateFormat = new SimpleDateFormat("yyMMdd")
+          val crawler_time = new Date(doc.media_doc_info.crawler_timestamp)
+          date_prefix = dateFormat.format(crawler_time)
+
+        } else {
+          System.err.println("Failed to parse :" + line._2)
+        }
+        (id, serialized_string, date_prefix)
+      }).filter( x  => x._1 != null && x._2 != null)
+
+      HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
+        mappingTableName, mappingFamily, mappingColumn)
+    })
 
     ssc.start()
     ssc.awaitTermination()
