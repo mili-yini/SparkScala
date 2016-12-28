@@ -18,14 +18,7 @@ import java.util.ArrayList;
  * Created by zhanglin5 on 2016/12/21.
  */
 public class DocumentAdapter {
-    static public CompositeDoc FromJsonToCompositeDoc(String json_str) {
-        JSONObject one_json;
-        try {
-            one_json = JSONObject.fromObject(json_str);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return  null;
-        }
+    static public CompositeDoc FromJsonToCompositeDoc(JSONObject one_json) {
         CompositeDoc compositeDoc = new CompositeDoc();
         MediaDocInfo media_doc = new MediaDocInfo();
         //mast have
@@ -53,8 +46,17 @@ public class DocumentAdapter {
             media_doc.setCategory_name(category_id);
         }
         compositeDoc.setMedia_doc_info(media_doc);
-
         return compositeDoc;
+    }
+    static public CompositeDoc FromJsonStringToCompositeDoc(String json_str) {
+        JSONObject one_json;
+        try {
+            one_json = JSONObject.fromObject(json_str);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return  null;
+        }
+        return FromJsonToCompositeDoc(one_json);
     }
 
     public ArrayList<CompositeDoc> FromJsonToComposite(String  json_str) {
