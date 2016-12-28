@@ -12,6 +12,8 @@ import CompositeDocProcess.DocumentAdapter
 import pipeline.CompositeDoc
 import javax.naming.Context
 
+import component.DocumentProcess.DocumentProcess
+
 //import Component.nlp.Text
 /**
   * Created by sunhaochuan on 2016/12/16.
@@ -79,24 +81,7 @@ object Streaming {
     }
 
     kafkaStream.foreachRDD(documents => {
-      var processedRDD = documents.map(line => {
-        var doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2.toString());
-        var serialized_string: String = null;
-        var id :String = null;
-        var date_prefix: String = null;
-        if (doc != null) {
-          var context: Context = null;
-          serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context);
-          id = doc.media_doc_info.id
-          val dateFormat = new SimpleDateFormat("yyMMdd")
-          val crawler_time = new Date(doc.media_doc_info.crawler_timestamp)
-          date_prefix = dateFormat.format(crawler_time)
-
-        } else {
-          System.err.println("Failed to parse :" + line._2)
-        }
-        (id, serialized_string, date_prefix)
-      }).filter( x  => x._1 != null && x._2 != null)
+      val processedRDD = DocumentProcess.ProcessStream(documents)
 
       HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
         mappingTableName, mappingFamily, mappingColumn)

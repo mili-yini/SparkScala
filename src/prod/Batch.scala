@@ -19,6 +19,7 @@ import org.bson.BSONObject
 import com.mongodb.hadoop.{BSONFileInputFormat, BSONFileOutputFormat, MongoInputFormat, MongoOutputFormat}
 import com.mongodb.hadoop.io.MongoUpdateWritable
 import Component.HBaseUtil.HbashBatch
+import component.DocumentProcess.DocumentProcess
 import net.sf.json.JSONObject
 //import Component.nlp.Text
 
@@ -67,24 +68,7 @@ object Batch {
     if (args.length > 6) {
       mappingColumn = args(6)
     }
-    var processedRDD = documents.map(line => {
-      var doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2.toString());
-      var serialized_string: String = null;
-      var id :String = null;
-      var date_prefix: String = null;
-      if (doc != null) {
-        var context: Context = null;
-        serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context);
-        id = doc.media_doc_info.id
-        val dateFormat = new SimpleDateFormat("yyMMdd")
-        val crawler_time = new Date(doc.media_doc_info.crawler_timestamp)
-        date_prefix = dateFormat.format(crawler_time)
-
-      } else {
-        System.err.println("Failed to parse :" + line._2)
-      }
-      (id, serialized_string, date_prefix)
-    }).filter( x  => x._1 != null && x._2 != null)
+    val processedRDD = DocumentProcess.ProcessBatch(documents)
     HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
       mappingTableName, mappingFamily, mappingColumn)
 

@@ -1,8 +1,12 @@
 package prod
 
+import java.util.Date
+import javax.naming.Context
+
 import Component.HBaseUtil.HbashBatch
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import pipeline.CompositeDoc
 
 /**
   * Created by sunhaochuan on 2016/12/28.
@@ -38,7 +42,18 @@ object HBaseDBExtraction {
       stopRow = args(5)
     }
 
-    var hbaseRDD : RDD[(String, String)] = HbashBatch.BatchReadHBaseToRDD(tableName, family, column, sc, startRow, stopRow)
+    var freshThreshold : Long = 0;
+    if (args.length > 6) {
+      freshThreshold = scala.util.Try(args(6).toLong).get
+    }
+
+    val now = new Date();
+    var now_timestamp : Long = now.getTime();
+    val context: Context = null;
+    val hbaseRDD : RDD[(String, String)] = HbashBatch.BatchReadHBaseToRDD(tableName, family, column, sc, startRow, stopRow).filter((line => {
+      val doc: CompositeDoc = DocProcess.CompositeDocSerialize.DeSerialize(line._2, context)
+      freshThreshold == 0 || (now_timestamp - doc.media_doc_info.crawler_timestamp) < freshThreshold
+    }))
 
     var output_path = "/data/overseas_in/recommendation/galaxy/temp"
     if (args.length > 2) {
