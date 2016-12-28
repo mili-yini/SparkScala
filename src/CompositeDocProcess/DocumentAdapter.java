@@ -42,7 +42,7 @@ public class DocumentAdapter {
         }
         if (one_json.get("publish_date") != null) {
             String publish_date = one_json.get("publish_date").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
             Date dt = new Date();
             dt = s.parse(publish_date);
             long t = dt.getTime();
