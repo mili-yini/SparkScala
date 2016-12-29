@@ -6,6 +6,7 @@ import net.sf.json.JSONObject;
 import org.apache.hadoop.io.Text;
 import pipeline.CompositeDoc;
 import serving.mediadocinfo.MediaDocInfo;
+import shared.datatypes.ProductCode;
 
 import javax.naming.Context;
 import java.io.BufferedReader;
@@ -16,6 +17,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+//import static shared.datatypes.ProductCode.INDIA_IMAGETEXT;
 
 /**
  * Created by zhanglin5 on 2016/12/21.
@@ -32,6 +36,7 @@ public class DocumentAdapter {
         }
         if (one_json.get("title") != null) {
             media_doc.setName(one_json.get("title").toString());
+            media_doc.setNormalized_name(one_json.get("title").toString());
         } else {
             return null;
         }
@@ -56,7 +61,7 @@ public class DocumentAdapter {
             Date dt = new Date();
             dt = s.parse(modify_date);
             long t = dt.getTime();
-            media_doc.setUpdate_timestamp(t);   // TODO
+            media_doc.setUpdate_timestamp(t);   //
         }
         if (one_json.get("description") != null) {
             String description = one_json.get("description").toString();
@@ -66,6 +71,10 @@ public class DocumentAdapter {
             String category_id = one_json.get("category_id").toString();
             media_doc.setCategory_name(category_id);
         }
+         List<ProductCode> pcodes = new ArrayList<ProductCode>();
+       // pcodes.add(shared.datatypes.ProductCode.INDIA_IMAGETEXT);       //TODO
+        compositeDoc.setPcodes(pcodes);
+        compositeDoc.pcodes.add(shared.datatypes.ProductCode.INDIA_IMAGETEXT);
         compositeDoc.setMedia_doc_info(media_doc);
         return compositeDoc;
     }
