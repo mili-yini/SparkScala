@@ -18,7 +18,7 @@ object Word2Vector {
   def getEntityRelation(model:Word2VecModel,rdd:RDD[CompositeDoc]):Array[(String,String,Double)]={
     val entityWords=rdd.flatMap(_.feature_list.map(e=>(e.name,1)))
       .reduceByKey(_+_).map(e=>e._1).collect().toSet
-    val model=getWordVector(rdd)
+    val model=getWordVector(rdd )
     val result=ArrayBuffer[(String,String,Double)]()
     for(word<-entityWords){
       result.appendAll(model.findSynonyms(word,100).filter(e=>entityWords.contains(e._1)).map(e=>(word,e._1,e._2)))

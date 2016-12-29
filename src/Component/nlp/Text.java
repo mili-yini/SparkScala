@@ -1,6 +1,7 @@
 package Component.nlp;
 import pipeline.CompositeDoc;
 import scala.collection.immutable.Range;
+import serving.mediadocinfo.MediaDocInfo;
 import shared.datatypes.ItemFeature;
 
 import java.io.IOException;
@@ -21,6 +22,11 @@ public class Text implements Serializable {
     List<String> keyWords=new ArrayList<String>();
     BigInteger simHash=new BigInteger("-1");
     public void addComopsticDoc(CompositeDoc doc){
+        doc.setFeature_list(new ArrayList<ItemFeature>());
+        doc.setText_rank(new ArrayList<ItemFeature>());
+        doc.setBody_words(new ArrayList<String>());
+        doc.setTitle_words(new ArrayList<String>());
+        doc.setMedia_doc_info(new MediaDocInfo());
         //添加textrank
         for(String word:wordTextRank.keySet()){
             short value=(short)(wordTextRank.get(word)*100);
@@ -31,7 +37,7 @@ public class Text implements Serializable {
         }
         //添加tf
         for(String word:tf.keySet()){
-            short value=(short)(wordTextRank.get(word)*100);
+            short value=(short)(tf.get(word)*100);
             ItemFeature iF=new ItemFeature();
             iF.setWeight(value);
             iF.setName(word);
@@ -44,7 +50,8 @@ public class Text implements Serializable {
         //添加分词后的标题
         doc.title_words.add(this.spliteTitle);
         //添加simhash
-        doc.media_doc_info.setName_fingerprint(this.simHash.intValue());
+        int j=this.simHash.intValue();
+        doc.media_doc_info.setName_fingerprint(j);
     }
     public void getTF(){
         for(Sentence sentence:this.sentences){
