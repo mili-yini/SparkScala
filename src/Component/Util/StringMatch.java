@@ -1,13 +1,10 @@
-package component.Util;
+package Component.Util;
 
 //import scala.collection.mutable.HashMap;
 //import scala.collection.mutable.HashTable;
 
-import com.sun.tools.corba.se.idl.InterfaceGen;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;

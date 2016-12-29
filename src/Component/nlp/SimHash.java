@@ -1,7 +1,7 @@
 package Component.nlp;
 import java.math.BigInteger;
 import java.util.Map;
-import java.util.StringTokenizer;
+
 public class SimHash
 {
 

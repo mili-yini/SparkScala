@@ -1,4 +1,4 @@
-package component.Util;
+package Component.Util;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

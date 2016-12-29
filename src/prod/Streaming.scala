@@ -12,7 +12,7 @@ import CompositeDocProcess.DocumentAdapter
 import pipeline.CompositeDoc
 import javax.naming.Context
 
-import component.DocumentProcess.DocumentProcess
+import Component.DocumentProcess.DocumentProcess
 
 //import Component.nlp.Text
 /**

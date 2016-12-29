@@ -1,5 +1,4 @@
 package Component.nlp;
-
 import pipeline.CompositeDoc;
 import scala.collection.immutable.Range;
 import shared.datatypes.ItemFeature;

@@ -1,4 +1,4 @@
-package component.DocumentProcess
+package Component.DocumentProcess
 
 import java.text.SimpleDateFormat
 import java.util.Date

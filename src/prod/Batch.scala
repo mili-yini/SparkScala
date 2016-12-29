@@ -19,7 +19,7 @@ import org.bson.BSONObject
 import com.mongodb.hadoop.{BSONFileInputFormat, BSONFileOutputFormat, MongoInputFormat, MongoOutputFormat}
 import com.mongodb.hadoop.io.MongoUpdateWritable
 import Component.HBaseUtil.HbashBatch
-import component.DocumentProcess.DocumentProcess
+import Component.DocumentProcess.DocumentProcess
 import net.sf.json.JSONObject
 //import Component.nlp.Text
 
