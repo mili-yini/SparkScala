@@ -36,8 +36,8 @@ object DocumentProcess {
         serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context);
 
         //add by lujing
-        //val text=new Text(doc.media_doc_info.name,doc.description)
-        //text.addComopsticDoc(doc)
+        val text=new Text(doc.media_doc_info.name,doc.description)
+        text.addComopsticDoc(doc)
 
         id = doc.media_doc_info.id
         val dateFormat = new SimpleDateFormat("yyMMdd")
