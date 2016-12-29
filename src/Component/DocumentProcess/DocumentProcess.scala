@@ -26,9 +26,7 @@ object DocumentProcess {
 
     val processedRDD = documents.map(line => {
       val doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2);
-      //add by lujing
-      val text=new Text(doc.media_doc_info.name,doc.description)
-      text.addComopsticDoc(doc)
+
       //
       var serialized_string: String = null;
       var id :String = null;
@@ -36,6 +34,11 @@ object DocumentProcess {
       if (doc != null) {
         val context: Context = null;
         serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context);
+
+        //add by lujing
+        //val text=new Text(doc.media_doc_info.name,doc.description)
+        //text.addComopsticDoc(doc)
+
         id = doc.media_doc_info.id
         val dateFormat = new SimpleDateFormat("yyMMdd")
         val crawler_time = new Date(doc.media_doc_info.crawler_timestamp)
