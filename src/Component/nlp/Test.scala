@@ -3,16 +3,9 @@ package Component.nlp
 import java.io.StringReader
 import java.util
 
-import edu.stanford.nlp.ie.crf.CRFClassifier
-import love.cq.domain.Forest
-import love.cq.library.Library
-import org.ansj.domain.Term
-import org.ansj.library.UserDefineLibrary
-import org.ansj.splitWord.Analysis
-import org.ansj.splitWord.analysis.{BaseAnalysis, NlpAnalysis, ToAnalysis}
-import org.wltea.analyzer.core.IKSegmenter
 
-import scala.collection.JavaConversions._
+import org.ansj.splitWord.analysis.{BaseAnalysis, NlpAnalysis, ToAnalysis}
+
 
 /**
   * Created by lujing1 on 2016/12/19.

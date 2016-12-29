@@ -10,13 +10,13 @@ import scala.collection.mutable.ArrayBuffer
   * Created by lujing1 on 2016/12/20.
   */
 object Word2Vector {
-  def getEntityRelation(rdd:RDD[Text]):Array[(String,String,Double)]={
+  def getEntityRelation(rdd:RDD[CompositeDoc]):Array[(String,String,Double)]={
     val model=getWordVector(rdd)
     val result=getEntityRelation(model,rdd)
     result
   }
-  def getEntityRelation(model:Word2VecModel,rdd:RDD[Text]):Array[(String,String,Double)]={
-    val entityWords=rdd.flatMap(_.wordTextRank.keySet().map(e=>(e,1)))
+  def getEntityRelation(model:Word2VecModel,rdd:RDD[CompositeDoc]):Array[(String,String,Double)]={
+    val entityWords=rdd.flatMap(_.feature_list.map(e=>(e.name,1)))
       .reduceByKey(_+_).map(e=>e._1).collect().toSet
     val model=getWordVector(rdd)
     val result=ArrayBuffer[(String,String,Double)]()
@@ -26,7 +26,7 @@ object Word2Vector {
     result.toArray
   }
   def getWordVector(rdd:RDD[CompositeDoc]):Word2VecModel={
-    val input = rdd.flatMap(_.body_words.).map(_.split(" ").toSeq)
+    val input = rdd.flatMap(_.body_words).map(_.split(" ").toSeq)
     val word2vec = new Word2Vec()
     word2vec.setMinCount(1)
     val model = word2vec.fit(input)

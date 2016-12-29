@@ -5,6 +5,7 @@ import java.util.Date
 import javax.naming.Context
 
 import Component.HBaseUtil.HbashBatch
+import Component.nlp.Text
 import CompositeDocProcess.DocumentAdapter
 import org.apache.spark.rdd.RDD
 import org.bson.BSONObject
@@ -25,6 +26,10 @@ object DocumentProcess {
 
     val processedRDD = documents.map(line => {
       val doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2);
+      //add by lujing
+      val text=new Text(doc.media_doc_info.name,doc.description)
+      text.addComopsticDoc(doc)
+      //
       var serialized_string: String = null;
       var id :String = null;
       var date_prefix: String = null;
