@@ -20,31 +20,35 @@ object HBaseDBExtraction {
     val sparkConf = new SparkConf()
     val sc = new SparkContext(masterUrl, "SparkHBaseDBExtraction", sparkConf)
 
-    var tableName = "GalaxyContent"
+    var output_path = "/data/overseas_in/recommendation/galaxy/temp"
     if (args.length > 1) {
-      tableName = args(1);
+      output_path = args(1)
     }
+    var freshThreshold : Long = 0;
+    if (args.length > 2) {
+      freshThreshold = scala.util.Try(args(2).toLong).get
+    }
+    var tableName = "GalaxyContent"
+    if (args.length > 3) {
+      tableName = args(3);
+    }
+
     var family = "info"
-    if (args.length > 2){
-      family = args(2)
+    if (args.length > 4){
+      family = args(4)
     }
     var column = "content"
-    if (args.length > 3) {
-      column = args(3)
+    if (args.length > 5) {
+      column = args(5)
     }
 
     var startRow :String = null
-    if (args.length > 4) {
-      startRow = args(4)
+    if (args.length > 6) {
+      startRow = args(6)
     }
     var stopRow :String = null;
-    if (args.length > 5) {
-      stopRow = args(5)
-    }
-
-    var freshThreshold : Long = 0;
-    if (args.length > 6) {
-      freshThreshold = scala.util.Try(args(6).toLong).get
+    if (args.length > 7) {
+      stopRow = args(7)
     }
 
     val now = new Date();
@@ -55,10 +59,7 @@ object HBaseDBExtraction {
       freshThreshold == 0 || (now_timestamp - doc.media_doc_info.crawler_timestamp) < freshThreshold
     }))
 
-    var output_path = "/data/overseas_in/recommendation/galaxy/temp"
-    if (args.length > 2) {
-      output_path = args(2)
-    }
+
     hbaseRDD.saveAsTextFile(output_path)
   }
 }
