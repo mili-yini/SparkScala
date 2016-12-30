@@ -1,9 +1,6 @@
 package Component.nlp;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by lujing1 on 2016/12/20.
@@ -16,6 +13,7 @@ public class TextRank {
     }
     static public Map<String,Set<String>>getWordRelation(Text text){
         Map<String,Set<String>> result=new HashMap<String,Set<String>>();
+
         for(Sentence sentence:text.sentences){
             Set<String> words=new HashSet<String>();
             for(Word word:sentence.getWords()){

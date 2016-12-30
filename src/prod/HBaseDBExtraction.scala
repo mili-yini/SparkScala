@@ -4,6 +4,9 @@ import java.util.Date
 import javax.naming.Context
 
 import Component.HBaseUtil.HbashBatch
+import Component.nlp.{MergeNlpFeature, Word2Vector}
+import ldacore.CalLDA
+import org.apache.spark.ml.feature.Word2Vec
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import pipeline.CompositeDoc
@@ -59,6 +62,19 @@ object HBaseDBExtraction {
       freshThreshold == 0 || (now_timestamp - doc.media_doc_info.crawler_timestamp) < freshThreshold
     }))
 
+   //add by lujing
+    val flag=true
+    val outputPath = ""
+    if(flag) {
+      Word2Vector.getEntityRelation(hbaseRDD, outputPath + "wordRelation")
+      MergeNlpFeature.calLDAFeature(hbaseRDD, outputPath + "LDA")
+    }else{
+      MergeNlpFeature.mergeLDAFeature(hbaseRDD,outputPath + "LDA")
+    }
+    //
+    if (args.length > 2) {
+      output_path = args(2)
+    }
 
     hbaseRDD.saveAsTextFile(output_path)
   }

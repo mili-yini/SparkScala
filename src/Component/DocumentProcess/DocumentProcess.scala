@@ -34,11 +34,8 @@ object DocumentProcess {
       var date_prefix: String = null;
       if (doc != null) {
         //add by lujing
-        if((doc.description!=null)&&(doc.description.length>0)){
-          val text=new Text(doc.media_doc_info.name,doc.description)
-          text.addComopsticDoc(doc)
-          //println(doc.feature_list.map(e=>e.getName+":"+e.getWeight).mkString("\t"))
-        }
+        val text=new Text(doc.media_doc_info.name,doc.description)
+        text.addComopsticDoc(doc)
         val context: Context = null;
         serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context)
         id = doc.media_doc_info.id

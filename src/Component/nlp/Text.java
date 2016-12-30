@@ -22,11 +22,6 @@ public class Text implements Serializable {
     List<String> keyWords=new ArrayList<String>();
     BigInteger simHash=new BigInteger("-1");
     public void addComopsticDoc(CompositeDoc doc){
-//        doc.setFeature_list(new ArrayList<ItemFeature>());
-//        doc.setText_rank(new ArrayList<ItemFeature>());
-//        doc.setBody_words(new ArrayList<String>());
-//        doc.setTitle_words(new ArrayList<String>());
-        //doc.setMedia_doc_info(new MediaDocInfo());
         //添加textrank
         for(String word:wordTextRank.keySet()){
             short value=(short)(wordTextRank.get(word)*100);
@@ -77,18 +72,27 @@ public class Text implements Serializable {
     public Text(String title,String text) throws IOException {
         //处理正文
 
-        String[] ss=text.split(dot);
+        String[] ss=null;
+        if(text!=null){
+           ss=text.split(dot);
+        }else{
+            ss=new String[0];
+            ss[0]=title;
+        }
+        //处理正文
         for(String sentence:ss){
             Sentence sen=new Sentence(sentence);
             sentences.add(sen);
             spliteSentences.add(sen.spliteSentence);
         }
-        wordTextRank=TextRank.getTextRank(this);
-        getTF();
-        this.simHash=SimHash.simHash(this.tf,128);
         //处理title
         Sentence sen=new Sentence(title);
         spliteTitle=sen.spliteSentence;
+        //计算textrank
+        wordTextRank=TextRank.getTextRank(this);
+        //计算tf
+        getTF();
+        this.simHash=SimHash.simHash(this.tf,128);
         for(Word word:sen.getWords()){
             String nature=word.getNature();
             boolean flag1=nature.equals("nr")||nature.equals("ns")||nature.equals("nz");
@@ -110,4 +114,5 @@ public class Text implements Serializable {
         sb.append("\n");
         return sb.toString();
     }
+
 }

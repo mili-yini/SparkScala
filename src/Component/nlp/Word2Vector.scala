@@ -1,5 +1,6 @@
 package Component.nlp
 
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.mllib.feature.{Word2Vec, Word2VecModel}
 import org.apache.spark.rdd.RDD
 import pipeline.CompositeDoc
@@ -10,10 +11,16 @@ import scala.collection.mutable.ArrayBuffer
   * Created by lujing1 on 2016/12/20.
   */
 object Word2Vector {
-  def getEntityRelation(rdd:RDD[CompositeDoc]):Array[(String,String,Double)]={
+  def getEntityRelation(rddBase64:RDD[(String,String)],outputPath:String):Unit={
+    val rdd=rddBase64.map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
     val model=getWordVector(rdd)
     val result=getEntityRelation(model,rdd)
-    result
+    val sc=rdd.sparkContext
+    if(outputPath.length>0){
+       sc.parallelize(result).saveAsObjectFile(outputPath)
+    }else{
+      sc.parallelize(result).foreach(println(_))
+    }
   }
   def getEntityRelation(model:Word2VecModel,rdd:RDD[CompositeDoc]):Array[(String,String,Double)]={
     val entityWords=rdd.flatMap(_.feature_list.map(e=>(e.name,1)))
@@ -31,6 +38,15 @@ object Word2Vector {
     word2vec.setMinCount(1)
     val model = word2vec.fit(input)
     model
+  }
+
+  def main(args: Array[String]): Unit = {
+    var masterUrl = "local[2]"
+    val sparkConf = new SparkConf()
+    val sc = new SparkContext(masterUrl, "SparkHBaseDBExtraction", sparkConf)
+    val rddBase64=sc.textFile("C:\\Users\\lujing1\\Desktop\\LabelTag\\hdfs_data_input")
+      .map(e=>e.split("\t")).map(e=>(e(0),e(1)))
+    getEntityRelation(rddBase64,"")
   }
 
 }

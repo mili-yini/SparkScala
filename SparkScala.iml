@@ -245,5 +245,8 @@
     <orderEntry type="library" name="Maven: org.apache.parquet:parquet-jackson:1.7.0" level="project" />
     <orderEntry type="library" name="Maven: com.le.rec:serializer:0.0.1" level="project" />
     <orderEntry type="library" name="Maven: net.sf.json-lib:json-lib:2.4" level="project" />
+    <orderEntry type="library" name="HadoopCompositeDoc (2)" level="project" />
+    <orderEntry type="library" name="json-lib-2.4-jdk15-javadoc (3)" level="project" />
+    <orderEntry type="library" name="scala-sdk-2.10.4" level="application" />
   </component>
 </module>
