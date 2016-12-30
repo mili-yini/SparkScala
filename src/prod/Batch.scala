@@ -68,10 +68,12 @@ object Batch {
     if (args.length > 6) {
       mappingColumn = args(6)
     }
+    //println("S "+documents.count())
     val processedRDD = DocumentProcess.ProcessBatch(documents)
     HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
       mappingTableName, mappingFamily, mappingColumn)
-
+    //processedRDD.foreach(e=>println(e))
+    //println("E "+processedRDD.count())
 
   }
 }

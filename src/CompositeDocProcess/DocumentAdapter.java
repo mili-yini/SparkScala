@@ -6,6 +6,7 @@ import net.sf.json.JSONObject;
 import org.apache.hadoop.io.Text;
 import pipeline.CompositeDoc;
 import serving.mediadocinfo.MediaDocInfo;
+import shared.datatypes.ItemFeature;
 import shared.datatypes.ProductCode;
 
 import javax.naming.Context;
@@ -28,6 +29,10 @@ public class DocumentAdapter {
     static public CompositeDoc FromJsonToCompositeDoc(JSONObject one_json) throws ParseException {
         CompositeDoc compositeDoc = new CompositeDoc();
         MediaDocInfo media_doc = new MediaDocInfo();
+        compositeDoc.setFeature_list(new ArrayList<ItemFeature>());
+        compositeDoc.setText_rank(new ArrayList<ItemFeature>());
+        compositeDoc.setBody_words(new ArrayList<String>());
+        compositeDoc.setTitle_words(new ArrayList<String>());
         //mast have
         if (one_json.get("info_id") != null) {
             media_doc.setId(one_json.get("info_id").toString());
@@ -86,7 +91,9 @@ public class DocumentAdapter {
             e.printStackTrace();
             return  null;
         }
+        //return FromJsonToCompositeDoc(one_json);
         return FromJsonToCompositeDoc(one_json);
+        //ret_composite.setDescription(json_str);
     }
 
     public ArrayList<CompositeDoc> FromJsonToComposite(String  json_str) {

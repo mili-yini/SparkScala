@@ -22,11 +22,11 @@ public class Text implements Serializable {
     List<String> keyWords=new ArrayList<String>();
     BigInteger simHash=new BigInteger("-1");
     public void addComopsticDoc(CompositeDoc doc){
-        doc.setFeature_list(new ArrayList<ItemFeature>());
-        doc.setText_rank(new ArrayList<ItemFeature>());
-        doc.setBody_words(new ArrayList<String>());
-        doc.setTitle_words(new ArrayList<String>());
-        doc.setMedia_doc_info(new MediaDocInfo());
+//        doc.setFeature_list(new ArrayList<ItemFeature>());
+//        doc.setText_rank(new ArrayList<ItemFeature>());
+//        doc.setBody_words(new ArrayList<String>());
+//        doc.setTitle_words(new ArrayList<String>());
+        //doc.setMedia_doc_info(new MediaDocInfo());
         //添加textrank
         for(String word:wordTextRank.keySet()){
             short value=(short)(wordTextRank.get(word)*100);
@@ -76,6 +76,7 @@ public class Text implements Serializable {
     }
     public Text(String title,String text) throws IOException {
         //处理正文
+
         String[] ss=text.split(dot);
         for(String sentence:ss){
             Sentence sen=new Sentence(sentence);

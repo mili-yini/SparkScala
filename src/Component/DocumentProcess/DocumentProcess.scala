@@ -1,5 +1,6 @@
 package Component.DocumentProcess
 
+import scala.collection.JavaConversions._
 import java.text.SimpleDateFormat
 import java.util.Date
 import javax.naming.Context
@@ -32,13 +33,14 @@ object DocumentProcess {
       var id :String = null;
       var date_prefix: String = null;
       if (doc != null) {
-        val context: Context = null;
-        serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context);
-
         //add by lujing
-        val text=new Text(doc.media_doc_info.name,doc.description)
-        text.addComopsticDoc(doc)
-
+        if((doc.description!=null)&&(doc.description.length>0)){
+          val text=new Text(doc.media_doc_info.name,doc.description)
+          text.addComopsticDoc(doc)
+          //println(doc.feature_list.map(e=>e.getName+":"+e.getWeight).mkString("\t"))
+        }
+        val context: Context = null;
+        serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context)
         id = doc.media_doc_info.id
         val dateFormat = new SimpleDateFormat("yyMMdd")
         val crawler_time = new Date(doc.media_doc_info.crawler_timestamp)
