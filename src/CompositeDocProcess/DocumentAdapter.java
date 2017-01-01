@@ -50,13 +50,13 @@ public class DocumentAdapter {
         } else {
             return null;
         }
-        if (one_json.get("publish_date") != null) {
-            String publish_date = one_json.get("publish_date").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
-            Date dt = new Date();
-            dt = s.parse(publish_date);
-            long t = dt.getTime();
-            media_doc.setCreate_timestamp(t);
+        if (one_json.get("update_time") != null) {
+            String tmp = one_json.get("update_time").toString();
+            Long tmp_long = Long.parseLong(tmp);
+            media_doc.setCrawler_timestamp(tmp_long);
+            compositeDoc.setCrawl_time(tmp_long);
+        } else {
+            return null;
         }
 
         // not have
@@ -68,6 +68,30 @@ public class DocumentAdapter {
             long t = dt.getTime();
             media_doc.setUpdate_timestamp(t);   //
         }
+        if (one_json.get("create_time") != null) {
+            String creat_date = one_json.get("create_time").toString();
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            Date dt = new Date();
+            dt = s.parse(creat_date);
+            long t = dt.getTime();
+            media_doc.setCreate_timestamp(t);
+        }
+
+        if (one_json.get("publish_date") != null) {
+            String publish_date = one_json.get("publish_date").toString();
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
+            Date dt = new Date();
+            dt = s.parse(publish_date);
+            long t = dt.getTime();
+            media_doc.setContent_timestamp(t);
+        } else if (media_doc.isSetCreate_timestamp()) {
+            media_doc.setContent_timestamp(media_doc.create_timestamp);
+        } else if (media_doc.isSetUpdate_timestamp()) {
+            media_doc.setContent_timestamp(media_doc.update_timestamp);
+        } else {
+            return null;
+        }
+
         if (one_json.get("description") != null) {
             String description = one_json.get("description").toString();
             compositeDoc.setDescription(description);
