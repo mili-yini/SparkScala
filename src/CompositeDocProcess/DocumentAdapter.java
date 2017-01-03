@@ -6,6 +6,7 @@ import net.sf.json.JSONObject;
 import org.apache.hadoop.io.Text;
 import pipeline.CompositeDoc;
 import serving.mediadocinfo.MediaDocInfo;
+import shared.datatypes.FeatureType;
 import shared.datatypes.ItemFeature;
 import shared.datatypes.ProductCode;
 
@@ -18,6 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 //import static shared.datatypes.ProductCode.INDIA_IMAGETEXT;
@@ -33,18 +35,23 @@ public class DocumentAdapter {
         compositeDoc.setText_rank(new ArrayList<ItemFeature>());
         compositeDoc.setBody_words(new ArrayList<String>());
         compositeDoc.setTitle_words(new ArrayList<String>());
+        media_doc.setFeature_list(new HashMap<String, ItemFeature>());
         //mast have
         if (one_json.get("info_id") != null) {
             media_doc.setId(one_json.get("info_id").toString());
         } else {
             return null;
         }
+        if (one_json.get("type_id") != null) {
+            String type_id = one_json.get("type_id").toString();
+            media_doc.setContent_type(Integer.parseInt(type_id));
+        }
         if (one_json.get("title") != null) {
         media_doc.setName(one_json.get("title").toString());
         media_doc.setNormalized_name(one_json.get("title").toString());
-    } else {
-        return null;
-    }
+        } else {
+            return null;
+         }
         if (one_json.get("url") != null) {
             media_doc.setPlay_url(one_json.get("url").toString());
         } else {
@@ -65,7 +72,8 @@ public class DocumentAdapter {
             SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
             Date dt = new Date();
             dt = s.parse(modify_date);
-            long t = dt.getTime();
+            // getTime 获取的是毫秒
+            long t = dt.getTime() / 1000;
             media_doc.setUpdate_timestamp(t);   //
         }
         if (one_json.get("create_time") != null) {
@@ -73,7 +81,8 @@ public class DocumentAdapter {
             SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
             Date dt = new Date();
             dt = s.parse(creat_date);
-            long t = dt.getTime();
+            // getTime 获取的是毫秒
+            long t = dt.getTime() / 1000;
             media_doc.setCreate_timestamp(t);
         }
 
@@ -82,7 +91,8 @@ public class DocumentAdapter {
             SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
             Date dt = new Date();
             dt = s.parse(publish_date);
-            long t = dt.getTime();
+            // getTime 获取的是毫秒
+            long t = dt.getTime() / 1000;
             media_doc.setContent_timestamp(t);
         } else if (media_doc.isSetCreate_timestamp()) {
             media_doc.setContent_timestamp(media_doc.create_timestamp);
@@ -99,6 +109,32 @@ public class DocumentAdapter {
         if (one_json.get("category_id") != null) {
             String category_id = one_json.get("category_id").toString();
             media_doc.setCategory_name(category_id);
+            // ADD it to feature list
+            ItemFeature item_feature = new ItemFeature();
+            item_feature.setName("CATEGORY_"+category_id);
+            item_feature.setType(FeatureType.CATEGORY);
+            item_feature.setWeight((short)1);
+            media_doc.feature_list.put("CATEGORY_"+category_id, item_feature);
+        }
+        if (one_json.get("source_id") != null) {
+            String source_id = one_json.get("source_id").toString();
+            media_doc.setSource(source_id);
+        }
+        if (one_json.get("tags") != null) {
+            JSONArray json_array = JSONArray.fromObject(one_json.get("tags"));
+            if (json_array != null) {
+                for (int i = 0; i < json_array.size(); ++i) {
+                    JSONObject one_tag = json_array.getJSONObject(i);
+                    String name = one_tag.get("name").toString();;
+
+                    // ADD it to feature list
+                    ItemFeature item_feature = new ItemFeature();
+                    item_feature.setName("TAG_" + name);
+                    item_feature.setType(FeatureType.TAG);
+                    item_feature.setWeight((short) 1);
+                    media_doc.feature_list.put("TAG_" + name, item_feature);
+                }
+            }
         }
          List<ProductCode> pcodes = new ArrayList<ProductCode>();
        // pcodes.add(shared.datatypes.ProductCode.INDIA_IMAGETEXT);       //TODO
@@ -116,7 +152,13 @@ public class DocumentAdapter {
             return  null;
         }
         //return FromJsonToCompositeDoc(one_json);
-        return FromJsonToCompositeDoc(one_json);
+        CompositeDoc doc = null;
+        try {
+            doc = FromJsonToCompositeDoc(one_json);
+        } catch (Exception e) {
+            System.err.println("PARSE JSON ERROR:" + json_str);
+        }
+        return doc;
         //ret_composite.setDescription(json_str);
     }
 

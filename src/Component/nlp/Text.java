@@ -76,7 +76,7 @@ public class Text implements Serializable {
         if(text!=null){
            ss=text.split(dot);
         }else{
-            ss=new String[0];
+            ss=new String[1];
             ss[0]=title;
         }
         //处理正文

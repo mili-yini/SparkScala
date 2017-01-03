@@ -71,10 +71,6 @@ object HBaseDBExtraction {
     }else{
       MergeNlpFeature.mergeLDAFeature(hbaseRDD,outputPath + "LDA")
     }
-    //
-    if (args.length > 2) {
-      output_path = args(2)
-    }
 
     hbaseRDD.saveAsTextFile(output_path)
   }

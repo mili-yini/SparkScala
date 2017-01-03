@@ -41,7 +41,7 @@ object DocumentProcess {
         id = doc.media_doc_info.id
         val dateFormat = new SimpleDateFormat("yyMMdd")
         val crawler_time = new Date(doc.media_doc_info.crawler_timestamp)
-        date_prefix = dateFormat.format(crawler_time)
+        date_prefix = dateFormat.format(doc.media_doc_info.crawler_timestamp * 1000 )
 
       } else {
         System.err.println("Failed to parse :" + line._2)

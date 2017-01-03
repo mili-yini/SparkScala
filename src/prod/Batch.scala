@@ -28,7 +28,7 @@ import net.sf.json.JSONObject
   */
 object Batch {
   def main(args:Array[String]) : Unit = {
-    var masterUrl = "local"
+    var masterUrl = "local[2]"
     if (args.length > 0) {
       masterUrl = args(0)
     }

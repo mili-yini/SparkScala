@@ -1,5 +1,8 @@
 package Streaming
 
+import java.text.SimpleDateFormat
+import java.util.Date
+
 import org.apache.spark.SparkConf
 import kafka.serializer.StringDecoder
 import net.sf.json.JSONObject
@@ -15,6 +18,14 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
   */
 object KafkaStreaming {
   def main(args: Array[String]): Unit = {
+
+
+    val dateFormat = new SimpleDateFormat("yyMMdd")
+    val crawler_time = new Date()
+    val date_prefix = dateFormat.format(1483420275000L)
+
+    System.out.println(date_prefix);
+    return 0;
     var masterUrl = "local[2]"
     if (args.length > 0) {
       masterUrl = args(0)
