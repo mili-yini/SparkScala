@@ -40,11 +40,11 @@ public class DocumentAdapter {
             return null;
         }
         if (one_json.get("title") != null) {
-            media_doc.setName(one_json.get("title").toString());
-            media_doc.setNormalized_name(one_json.get("title").toString());
-        } else {
-            return null;
-        }
+        media_doc.setName(one_json.get("title").toString());
+        media_doc.setNormalized_name(one_json.get("title").toString());
+    } else {
+        return null;
+    }
         if (one_json.get("url") != null) {
             media_doc.setPlay_url(one_json.get("url").toString());
         } else {
@@ -89,7 +89,7 @@ public class DocumentAdapter {
         } else if (media_doc.isSetUpdate_timestamp()) {
             media_doc.setContent_timestamp(media_doc.update_timestamp);
         } else {
-            return null;
+            media_doc.setContent_timestamp(media_doc.update_timestamp);
         }
 
         if (one_json.get("description") != null) {

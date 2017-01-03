@@ -3,8 +3,7 @@ package Component.Util;
 //import scala.collection.mutable.HashMap;
 //import scala.collection.mutable.HashTable;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
@@ -13,22 +12,72 @@ import java.util.Map;
 /**
  * Created by sunhaochuan on 2016/12/26.
  */
+// used for the matching
 class Token {
     public int idx;
     public int location;
     public int length;
 }
 
+// every item wich is used to match
 class entry {
-    public String name;
+    public String sub_name;
+    List<Integer> related_IPLIST;
+}
+// the latest matched target
+class InterestPoint {
     public String label;
+    public String name;
+    List<Integer> total_entry;
 }
 
 public class StringMatch {
     HashMap<String, ArrayList<Token> > table_;
     ArrayList<entry> entries_;
+    HashMap<String, Integer> entry_idx_;
+    ArrayList<InterestPoint> IPList_;
+
+    StringMatch () {
+        table_ = new HashMap<String, ArrayList<Token> >();
+        entries_ = new ArrayList<entry>();
+        entry_idx_ = new  HashMap<String, Integer>();
+        IPList_ = new ArrayList<InterestPoint>();
+    }
 
     static int token_size_ = 2;
+
+    public void BuildByMultiFile(String folder) throws FileNotFoundException, IOException {
+        if (folder == null || folder.length() == 0) {
+            return;
+        }
+        File file = new File(folder);
+        if (!file.isDirectory()) {
+            return;
+        }
+        String[] filelist = file.list();
+        for (int i = 0; i < filelist.length; i++) {
+            String label = filelist[i].substring(0, filelist[i].length() - 4);
+            //File readfile = new File(folder + "//" + filelist[i]);
+            LoadFileWithOneLable(folder + "\\" + filelist[i], label);
+        }
+    }
+
+    public void LoadFileWithOneLable(String file_path, String type)  throws FileNotFoundException, IOException {
+        BufferedReader br = new BufferedReader(new FileReader(file_path));
+        String line;
+        while ((line = br.readLine()) != null) {
+            InterestPoint ip = new InterestPoint();
+            ip.label = type;
+            ip.total_entry = new ArrayList<Integer>();
+            IPList_.add(ip);
+            String[] items = line.split("\t");
+            ip.name = items[0];
+            Integer entry_idx = AddOneItem(items[0], ip, IPList_.size() - 1 );
+            ip.total_entry.add(entry_idx);
+
+            //e.related_list.add(IPList_.size() - 1);
+        }
+    }
 
     public void LoadFile(String file)  {
 
@@ -47,9 +96,9 @@ public class StringMatch {
                     System.exit(-1);
                 }
                 entry e = new entry();
-                e.name = items[0];
-                e.label = items[1];
-                AddOneItem(e);
+                e.sub_name = items[0];
+                //e.label = items[1];
+                //AddOneItem(e);
             }
         }catch(Exception e) {
             e.printStackTrace();
@@ -62,7 +111,7 @@ public class StringMatch {
         entries_.clear();
 
         for (entry e : list) {
-            AddOneItem(e);
+            //AddOneItem(e);
         }
     }
 
@@ -75,22 +124,37 @@ public class StringMatch {
             table_.put(key, list);
         }
     }
-    private void AddOneItem(entry item) {
-        entries_.add(item);
-        for (int i = 0, idx = 0; i < item.name.length(); i = i + token_size_, idx ++) {
+    private Integer AddOneItem(String sub_name, InterestPoint ip, Integer ip_idx) {
+        Integer entry_idx = null;
+        entry item = null;
+        if (entry_idx_.containsKey(sub_name) == true) {
+            entry_idx = entry_idx_.get(sub_name);
+            item = entries_.get(entry_idx);
+            item.related_IPLIST.add(ip_idx);
+        } else {
+            item = new entry();
+            item.sub_name = sub_name;
+            item.related_IPLIST = new ArrayList<Integer>();
+            entries_.add(item);
+            entry_idx = entries_.size() - 1;
+            entry_idx_.put(sub_name, entry_idx);
+        }
+
+        for (int i = 0, idx = 0; i < item.sub_name.length(); i = i + token_size_, idx ++) {
             String token_key = null;
             Token token = new Token();
-            token.idx = entries_.size() - 1;
+            token.idx = entry_idx;
             token.location = idx;
-            token.length = item.name.length() / token_size_ + (item.name.length() % token_size_ != 0 ? 1 : 0);
-            if (i + token_size_ <= item.name.length() - 1) {
-                token_key = item.name.substring(i, i + token_size_ - 1);
+            token.length = item.sub_name.length() / token_size_ + (item.sub_name.length() % token_size_ != 0 ? 1 : 0);
+            if (i + token_size_ <= item.sub_name.length() - 1) {
+                token_key = item.sub_name.substring(i, i + token_size_);
                 AddItemToMap(token_key, token);
             } else {
-                token_key = item.name.substring(i, item.name.length() - 1);
+                token_key = item.sub_name.substring(i, item.sub_name.length());
                 AddItemToMap(token_key, token);
             }
         }
+        return  entry_idx;
     }
 
     public List<Integer> Match(String context) {
@@ -104,16 +168,20 @@ public class StringMatch {
                 MatchOneItem(cur_hold, list, res, j < token_size_ - 1);
             }
         }*/
-        List<Map<Integer, Integer>> cur_hold=new ArrayList<Map<Integer, Integer>>(token_size_);
-        for (int i = 0; i < cur_hold.size(); ++i) {
+        List<HashMap<Integer, Integer>> cur_hold=new ArrayList<HashMap<Integer, Integer>>();
+        for (int i = 0; i < token_size_; ++i) {
             cur_hold.add(new HashMap<Integer, Integer>());
         }
-        for (int i = 0; i < context.length(); ++i) {
+        System.out.println(cur_hold.size());
+        for (int i = 0; i < context.length(); i = i + token_size_) {
             int shard = i % token_size_;
 
             for (int j = 0; j < token_size_ && i + j < context.length(); ++j) {
-                ArrayList<Token> list = table_.get(context.substring(i, i + j));
-                MatchOneItem(cur_hold.get(shard), list, res, j < token_size_ - 1);
+                String cur_key = context.substring(i, i + j + 1);
+                ArrayList<Token> list = table_.get(cur_key);
+                if (list != null) {
+                    MatchOneItem(cur_hold.get(shard), list, res, j < token_size_ - 1);
+                }
             }
         }
 
@@ -143,6 +211,27 @@ public class StringMatch {
             }
         }
         map = tmp_map;
+    }
+
+    public static void main(String args[]) {
+        System.out.println("Hello World!");
+        StringMatch stringMatch = new StringMatch();
+        String directory_path = "D:\\Temp\\user_dic\\user_dic";
+        try {
+            stringMatch.BuildByMultiFile(directory_path);
+        } catch( Exception e) {
+
+        }
+
+        String content = "媒体：南海一度战云密布 火箭军数十枚导弹引弓待发";
+        List<Integer> res = stringMatch.Match(content);
+        for (Integer i : res) {
+            entry e = stringMatch.entries_.get(i);
+            for (Integer ip_idx : e.related_IPLIST) {
+                System.out.println(e.sub_name + ":" +stringMatch.IPList_.get(ip_idx).label);
+            }
+        }
+
     }
 
 }
