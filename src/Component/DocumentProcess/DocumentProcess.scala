@@ -11,6 +11,7 @@ import CompositeDocProcess.DocumentAdapter
 import org.apache.spark.rdd.RDD
 import org.bson.BSONObject
 import pipeline.CompositeDoc
+import shared.datatypes.ItemFeature
 
 /**
   * Created by sunhaochuan on 2016/12/28.
@@ -36,6 +37,9 @@ object DocumentProcess {
         //add by lujing
         val text=new Text(doc.media_doc_info.name,doc.description)
         text.addComopsticDoc(doc)
+
+        // add the feature list to media doc info
+        doc.feature_list.map(e=>doc.media_doc_info.feature_list.put(e.name, e))
         val context: Context = null;
         serialized_string = DocProcess.CompositeDocSerialize.Serialize(doc, context)
         id = doc.media_doc_info.id

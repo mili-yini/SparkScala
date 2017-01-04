@@ -114,7 +114,7 @@ public class DocumentAdapter {
             item_feature.setName("CATEGORY_"+category_id);
             item_feature.setType(FeatureType.CATEGORY);
             item_feature.setWeight((short)1);
-            media_doc.feature_list.put("CATEGORY_"+category_id, item_feature);
+            compositeDoc.feature_list.add(item_feature);
         }
         if (one_json.get("source_id") != null) {
             String source_id = one_json.get("source_id").toString();
@@ -132,7 +132,7 @@ public class DocumentAdapter {
                     item_feature.setName("TAG_" + name);
                     item_feature.setType(FeatureType.TAG);
                     item_feature.setWeight((short) 1);
-                    media_doc.feature_list.put("TAG_" + name, item_feature);
+                    compositeDoc.feature_list.add(item_feature);
                 }
             }
         }
@@ -157,6 +157,7 @@ public class DocumentAdapter {
             doc = FromJsonToCompositeDoc(one_json);
         } catch (Exception e) {
             System.err.println("PARSE JSON ERROR:" + json_str);
+            e.printStackTrace();
         }
         return doc;
         //ret_composite.setDescription(json_str);
