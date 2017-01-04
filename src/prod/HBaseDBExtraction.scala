@@ -23,35 +23,34 @@ object HBaseDBExtraction {
     val sparkConf = new SparkConf()
     val sc = new SparkContext(masterUrl, "SparkHBaseDBExtraction", sparkConf)
 
-    var output_path = "/data/overseas_in/recommendation/galaxy/temp"
-    if (args.length > 1) {
-      output_path = args(1)
+    val output_path = (args.length > 1) match {
+      case true=>args(1)
+      case false=>"/data/overseas_in/recommendation/galaxy/temp"
     }
-    var freshThreshold : Long = 0;
-    if (args.length > 2) {
-      freshThreshold = scala.util.Try(args(2).toLong).get
+    val freshThreshold=(args.length > 2) match{
+      case true=>scala.util.Try(args(2).toLong).get
+      case false=>0
     }
-    var tableName = "GalaxyContent"
-    if (args.length > 3) {
-      tableName = args(3);
+    val tableName=(args.length > 3) match {
+      case true=> args(3)
+      case false=> "GalaxyContent"
+    }
+    val family=(args.length > 4) match {
+      case true=> args(4)
+      case false=> "info"
+    }
+    val column=(args.length > 5) match {
+      case true=> args(5)
+      case false=> "content"
+    }
+    val startRow:String=(args.length > 6) match {
+      case true=> args(6)
+      case false=> null
     }
 
-    var family = "info"
-    if (args.length > 4){
-      family = args(4)
-    }
-    var column = "content"
-    if (args.length > 5) {
-      column = args(5)
-    }
-
-    var startRow :String = null
-    if (args.length > 6) {
-      startRow = args(6)
-    }
-    var stopRow :String = null;
-    if (args.length > 7) {
-      stopRow = args(7)
+    val stopRow :String =(args.length > 7) match {
+      case true=> args(7)
+      case false=> null
     }
 
     val now = new Date();
