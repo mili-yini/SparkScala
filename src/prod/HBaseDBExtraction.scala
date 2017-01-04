@@ -16,9 +16,9 @@ import pipeline.CompositeDoc
   */
 object HBaseDBExtraction {
   def main(args:Array[String]) : Unit = {
-    var masterUrl = "local[2]"
-    if (args.length > 0) {
-      masterUrl = args(0)
+    val masterUrl = (args.length > 0) match{
+      case true=> args(0)
+      case false=>"local[2]"
     }
     val sparkConf = new SparkConf()
     val sc = new SparkContext(masterUrl, "SparkHBaseDBExtraction", sparkConf)
@@ -27,8 +27,9 @@ object HBaseDBExtraction {
       case true=>args(1)
       case false=>"/data/overseas_in/recommendation/galaxy/temp"
     }
+
     val freshThreshold=(args.length > 2) match{
-      case true=>scala.util.Try(args(2).toLong).get
+      case true=>args(2).toLong
       case false=>0
     }
     val tableName=(args.length > 3) match {
