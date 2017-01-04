@@ -30,7 +30,8 @@ public class Text implements Serializable {
             ItemFeature iF=new ItemFeature();
             iF.setWeight(value);
             iF.setName(word);
-            iF.setType(FeatureType.TAG);
+            iF.setType(FeatureType.LABEL);
+
             doc.feature_list.add(iF);
         }
         //添加tf
@@ -50,10 +51,18 @@ public class Text implements Serializable {
         //添加simhash
         int j=this.simHash.intValue();
         doc.media_doc_info.setName_fingerprint(j);
+        //添加关键词
+
     }
     public void getTF(){
         for(Sentence sentence:this.sentences){
             for(Word word:sentence.getWords()){
+                if(!word.getNature().startsWith("n")){
+                    continue;
+                }
+                if(word.getNature().equals("null")){
+                    continue;
+                }
                 String text=word.getText();
                 if(!tf.containsKey(text)){
                     tf.put(text,0.0);
