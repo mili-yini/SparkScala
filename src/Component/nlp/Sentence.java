@@ -55,7 +55,7 @@ public class Sentence implements Serializable {
         StringBuffer sb=new StringBuffer();
         for(Term word:temp){
             int languageId=1;
-            words.add(new Word(word.getName(),word.getNatrue().natureStr,false,""));
+            words.add(new Word(word.getName(),word.getNatrue().natureStr,false));
             sb.append(word.getName()).append(" ");
         }
         spliteSentence=sb.toString();

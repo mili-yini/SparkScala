@@ -11,8 +11,7 @@ import scala.collection.mutable.ArrayBuffer
   * Created by lujing1 on 2016/12/20.
   */
 object Word2Vector {
-  def getEntityRelation(rddBase64:RDD[(String,String)],outputPath:String):Unit={
-    val rdd=rddBase64.map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
+  def getEntityRelation(rdd:RDD[CompositeDoc],outputPath:String):Unit={
     val model=getWordVector(rdd)
     val result=getEntityRelation(model,rdd)
     val sc=rdd.sparkContext
@@ -46,6 +45,7 @@ object Word2Vector {
     val sc = new SparkContext(masterUrl, "SparkHBaseDBExtraction", sparkConf)
     val rddBase64=sc.textFile("C:\\Users\\lujing1\\Desktop\\LabelTag\\hdfs_data_input")
       .map(e=>e.split("\t")).map(e=>(e(0),e(1)))
+      .map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
     getEntityRelation(rddBase64,"")
   }
 

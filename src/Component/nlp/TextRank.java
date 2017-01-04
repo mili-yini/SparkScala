@@ -9,12 +9,17 @@ public class TextRank {
     static public Map<String,Double>getTextRank(Text text){
         Map<String,Set<String>> wordRelation=getWordRelation(text);
        Map<String,Double> result=calWordsRank(wordRelation);
+//        if(result.size()==0){
+//            System.out.println("a");
+//        }
         return result;
     }
     static public Map<String,Set<String>>getWordRelation(Text text){
         Map<String,Set<String>> result=new HashMap<String,Set<String>>();
-
-        for(Sentence sentence:text.sentences){
+        List<Sentence> list=new ArrayList<Sentence>();
+        list.addAll(text.sentences);
+        list.add(text.titleSentence);
+        for(Sentence sentence:list){
             Set<String> words=new HashSet<String>();
             for(Word word:sentence.getWords()){
                  String nature=word.getNature();

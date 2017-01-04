@@ -2,6 +2,7 @@ package Component.nlp;
 import pipeline.CompositeDoc;
 import scala.collection.immutable.Range;
 import serving.mediadocinfo.MediaDocInfo;
+import shared.datatypes.FeatureType;
 import shared.datatypes.ItemFeature;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class Text implements Serializable {
     Map<String,Double> tf=new HashMap<String,Double>();
     List<String> spliteSentences=new ArrayList<String>();
     String spliteTitle=null;
+    Sentence titleSentence=null;
     List<String> keyWords=new ArrayList<String>();
     BigInteger simHash=new BigInteger("-1");
     public void addComopsticDoc(CompositeDoc doc){
@@ -28,6 +30,7 @@ public class Text implements Serializable {
             ItemFeature iF=new ItemFeature();
             iF.setWeight(value);
             iF.setName(word);
+            iF.setType(FeatureType.TAG);
             doc.feature_list.add(iF);
         }
         //添加tf
@@ -79,24 +82,29 @@ public class Text implements Serializable {
             ss=new String[1];
             ss[0]=title;
         }
-        //处理正文
+        //处理正文 存储分词后的句子
         for(String sentence:ss){
             Sentence sen=new Sentence(sentence);
             sentences.add(sen);
             spliteSentences.add(sen.spliteSentence);
         }
         //处理title
-        Sentence sen=new Sentence(title);
-        spliteTitle=sen.spliteSentence;
+        Sentence titlesen=new Sentence(title);
+        this.titleSentence=titlesen;
+        this.spliteTitle=titlesen.spliteSentence;
         //计算textrank
         wordTextRank=TextRank.getTextRank(this);
         //计算tf
         getTF();
         this.simHash=SimHash.simHash(this.tf,128);
-        for(Word word:sen.getWords()){
+        for(Sentence sen:this.sentences){
+          for(Word word:sen.getWords()){
             String nature=word.getNature();
             boolean flag1=nature.equals("nr")||nature.equals("ns")||nature.equals("nz");
-            keyWords.add(word.getText());
+            if(flag1){
+               keyWords.add(word.getText());
+            }
+          }
         }
     }
     public String toValue(){

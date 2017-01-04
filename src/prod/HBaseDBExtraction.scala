@@ -57,21 +57,24 @@ object HBaseDBExtraction {
     val now = new Date();
     var now_timestamp : Long = now.getTime();
     val context: Context = null;
-    val hbaseRDD : RDD[(String, String)] = HbashBatch.BatchReadHBaseToRDD(tableName, family, column, sc, startRow, stopRow).filter((line => {
-      val doc: CompositeDoc = DocProcess.CompositeDocSerialize.DeSerialize(line._2, context)
-      freshThreshold == 0 || (now_timestamp - doc.media_doc_info.crawler_timestamp) < freshThreshold
-    }))
+    val compositeDoc=HbashBatch.BatchReadHBaseToRDD(tableName, family, column, sc, startRow, stopRow)
+      .map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
+      .filter(e=>((freshThreshold==0)||(now_timestamp-e.media_doc_info.crawler_timestamp)<freshThreshold))
+      .cache()
+
 
    //add by lujing
     val flag=true
-    val outputPath = ""
+    val outputPath_LDA_Word2Vector = ""
+    var mergeLDA=compositeDoc
     if(flag) {
-      Word2Vector.getEntityRelation(hbaseRDD, outputPath + "wordRelation")
-      MergeNlpFeature.calLDAFeature(hbaseRDD, outputPath + "LDA")
+      Word2Vector.getEntityRelation(compositeDoc, outputPath_LDA_Word2Vector + "wordRelation")
+      MergeNlpFeature.calLDAFeature(compositeDoc, outputPath_LDA_Word2Vector + "LDA")
     }else{
-      MergeNlpFeature.mergeLDAFeature(hbaseRDD,outputPath + "LDA")
+      mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,outputPath_LDA_Word2Vector + "LDA")
     }
-
-    hbaseRDD.saveAsTextFile(output_path)
+    mergeLDA
+      .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))
+      .saveAsTextFile(output_path)
   }
 }

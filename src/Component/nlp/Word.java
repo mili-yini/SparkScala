@@ -11,7 +11,7 @@ public class Word implements Serializable {
     private boolean isStopWord;
 
 
-    public Word(String text, String nature, boolean isStopWord, String entityType) {
+    public Word(String text, String nature, boolean isStopWord) {
         this.text = text;
         this.nature = nature;
         this.isStopWord = isStopWord;

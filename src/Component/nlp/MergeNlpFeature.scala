@@ -14,14 +14,14 @@ import scala.collection.mutable.ArrayBuffer
   * Created by lujing1 on 2016/12/20.
   */
 object MergeNlpFeature {
-  def calLDAFeature(rddBase64:RDD[(String,String)],outputPath:String): Unit ={
-    val rdd=rddBase64.map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
+  def calLDAFeature(rdd:RDD[CompositeDoc],outputPath:String): Unit ={
+    //val rdd=rddBase64.map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
     val sc=rdd.sparkContext
     val feature=rdd.map(e=>(e,e.feature_list)).filter(_._2!=null).filter(_._2.length>0)
         .mapValues(_.toList.map(ee=>(ee.name,ee.weight.toDouble)))
           .map(e=>(e._1.media_doc_info.id,e._2))
     val result=CalLDA.getLDAModel[String](sc,feature,100)._1
-      .map(e=>(e._1+"\t"+e._2.toArray.mkString(" ")))
+      .map(e=>(e._1+"\t"+e._2.toArray.mkString(" "))).cache()
 
     if(outputPath.length>0){
        result.saveAsTextFile(outputPath)
@@ -36,15 +36,13 @@ object MergeNlpFeature {
     }
   }
 
-  def mergeLDAFeature(rddBase64:RDD[(String,String)], outputPath:String): RDD[CompositeDoc] = {
-    val sc = rddBase64.sparkContext
-    val rdd = rddBase64
-      .map(e => DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
-      .map(e => (e.media_doc_info.id, e))
+  def mergeLDAFeature(rdd:RDD[CompositeDoc], outputPath:String): RDD[CompositeDoc] = {
+    val sc = rdd.sparkContext
+    val compostic=rdd.map(e => (e.media_doc_info.id, e))
     val feature = sc.textFile(outputPath)
       .map(e => e.split("\t")).map(e => (e(0), e(1).split(" ").map(ee => ee.toDouble)))
     //rdd.foreach(e => println(e._1))
-    val result=rdd.leftOuterJoin(feature).map{ e =>
+    val result=compostic.leftOuterJoin(feature).map{ e =>
       val doc = e._2._1
       val f = e._2._2
       f match {
@@ -62,7 +60,8 @@ object MergeNlpFeature {
     val rddBase64=sc.
       textFile("C:\\Users\\lujing1\\Desktop\\LabelTag\\hdfs_data_input")
       .map(e=>e.split("\t")).map(e=>(e(0),e(1)))
-    //calLDAFeature(rddBase64,"D:\\a")
+      .map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
+    calLDAFeature(rddBase64,"D:\\a")
     val result=mergeLDAFeature(rddBase64,"D:\\a")
     result.foreach(e=>println(e.media_doc_info.getLdavec.mkString(" ")))
 
