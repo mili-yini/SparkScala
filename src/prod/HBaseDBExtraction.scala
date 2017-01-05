@@ -53,13 +53,17 @@ object HBaseDBExtraction {
       case true => if (args(7) == "BUILD_DOC2VEC") true else false;
       case false => false
     }
-    val startRow:String=(args.length > 7) match {
-      case true=> args(7)
+    val feature_path = (args.length > 8) match {
+      case true => args(8)
+      case false => null
+    }
+    val startRow:String=(args.length > 9) match {
+      case true=> args(9)
       case false=> null
     }
 
-    val stopRow :String =(args.length > 8) match {
-      case true=> args(8)
+    val stopRow :String =(args.length > 10) match {
+      case true=> args(10)
       case false=> null
     }
 
@@ -73,8 +77,8 @@ object HBaseDBExtraction {
 
     var mergeLDA=compositeDoc
     val outputPath_LDA_Word2Vector = ""
-    if (need_merge) {
-      mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,output_path + "//aggregate_result/*")
+    if (need_merge && feature_path != null) {
+      mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,feature_path + "//*")
       mergeLDA
         .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))
         .saveAsTextFile(output_path + "//aggregate_output")
