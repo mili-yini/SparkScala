@@ -20,14 +20,20 @@ public class TextRank {
         list.addAll(text.sentences);
         list.add(text.titleSentence);
         for(Sentence sentence:list){
+
             Set<String> words=new HashSet<String>();
             for(Word word:sentence.getWords()){
-                 String nature=word.getNature();
-                 boolean flag1=nature.equals("nr")||nature.equals("ns")||nature.equals("nz");
-
-                if(flag1){
-                    words.add(word.getText());
+                if(!word.getNature().startsWith("n")){
+                    continue;
                 }
+                if(word.getNature().equals("null")){
+                    continue;
+                }
+                String wordName=word.getText();
+                if(wordName.length()<2){
+                    continue;
+                }
+                words.add(word.getText());
             }
             for(String word:words){
                 if(!result.containsKey(word)){

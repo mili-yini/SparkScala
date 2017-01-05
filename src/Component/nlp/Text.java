@@ -55,15 +55,15 @@ public class Text implements Serializable {
 
     }
     public void getTF(){
-        for(Sentence sentence:this.sentences){
+        List<Sentence> temp=new ArrayList<Sentence>();
+        temp.addAll(this.sentences);
+        temp.add(this.titleSentence);
+        for(Sentence sentence:temp){
             for(Word word:sentence.getWords()){
-                if(!word.getNature().startsWith("n")){
-                    continue;
-                }
-                if(word.getNature().equals("null")){
-                    continue;
-                }
                 String text=word.getText();
+                if(text.length()<2){
+                    continue;
+                }
                 if(!tf.containsKey(text)){
                     tf.put(text,0.0);
                 }
