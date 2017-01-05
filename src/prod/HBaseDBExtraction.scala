@@ -74,7 +74,7 @@ object HBaseDBExtraction {
     var mergeLDA=compositeDoc
     val outputPath_LDA_Word2Vector = ""
     if (need_merge) {
-      //mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,outputPath_LDA_Word2Vector + "LDA")
+      mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,output_path + "//aggregate_result/*")
       mergeLDA
         .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))
         .saveAsTextFile(output_path + "//aggregate_output")

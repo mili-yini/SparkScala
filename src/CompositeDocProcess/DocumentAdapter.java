@@ -5,16 +5,17 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.hadoop.io.Text;
 import pipeline.CompositeDoc;
+import serving.GlobalIdType;
 import serving.mediadocinfo.MediaDocInfo;
+import shared.datatypes.DataType;
 import shared.datatypes.FeatureType;
 import shared.datatypes.ItemFeature;
 import shared.datatypes.ProductCode;
+import sun.misc.BASE64Decoder;
 
 import javax.naming.Context;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.List;
  * Created by zhanglin5 on 2016/12/21.
  */
 public class DocumentAdapter {
-    static public CompositeDoc FromJsonToCompositeDoc(JSONObject one_json) throws ParseException {
+    static public CompositeDoc FromJsonToCompositeDoc(JSONObject one_json) throws ParseException, IOException {
         CompositeDoc compositeDoc = new CompositeDoc();
         MediaDocInfo media_doc = new MediaDocInfo();
         compositeDoc.setFeature_list(new ArrayList<ItemFeature>());
@@ -65,6 +66,33 @@ public class DocumentAdapter {
         } else {
             return null;
         }
+
+        media_doc.setData_type(DataType.WEB_DOCUMENT);
+        long doc_id ;
+        int mid = media_doc.id.length() / 2;
+        long h1 = media_doc.id.substring(0, mid).hashCode();
+        long h2 = media_doc.id.substring(mid, media_doc.id.length()).hashCode();
+        doc_id = (h1 << 32) + h2;
+        compositeDoc.setDoc_id(doc_id);
+
+        long ITEM_ID_BITS = ((long)1L << 56) - 1;
+        long type_long = 212;
+        long global_id ;
+        if (type_long > 100 && type_long <= 163) {
+            global_id = (((type_long) - 100) << 56) + (doc_id & ITEM_ID_BITS);
+        } else if (type_long > 200 && type_long <= 263) {
+            global_id = (((type_long) - 200 + 64) << 56) + (doc_id & ITEM_ID_BITS);
+        } else {
+            global_id = 0L;
+            throw  new IOException("global id is 0!");
+        }
+
+        media_doc.setGlobal_id64(global_id);
+
+        //exchange the id
+        compositeDoc.setId(media_doc.id);
+        media_doc.setId(String.valueOf(type_long) + "_"+ String.valueOf(doc_id));
+
 
         // not have
         if (one_json.get("modify_date") != null) {
