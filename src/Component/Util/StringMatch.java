@@ -3,6 +3,11 @@ package Component.Util;
 //import scala.collection.mutable.HashMap;
 //import scala.collection.mutable.HashTable;
 
+import org.ansj.domain.Term;
+import org.ansj.splitWord.analysis.NlpAnalysis;
+import scala.*;
+import scala.Serializable;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,32 +17,38 @@ import java.util.Map;
 /**
  * Created by sunhaochuan on 2016/12/26.
  */
-// used for the matching
-class Token {
-    public int idx;
-    public int location;
-    public int length;
-}
 
-// every item wich is used to match
-class entry {
-    public String sub_name;
-    List<Integer> related_IPLIST;
-}
-// the latest matched target
-class InterestPoint {
-    public String label;
-    public String name;
-    List<Integer> total_entry;
-}
 
-public class StringMatch {
-    HashMap<String, ArrayList<Token> > table_;
-    ArrayList<entry> entries_;
-    HashMap<String, Integer> entry_idx_;
-    ArrayList<InterestPoint> IPList_;
+public class StringMatch implements scala.Serializable{
 
-    StringMatch () {
+    // used for the matching
+    public class Token implements Serializable {
+        public int idx;
+        public int location;
+        public int length;
+    }
+
+    // every item wich is used to match
+    public class entry implements  Serializable {
+        public String sub_name;
+        public List<Integer> related_IPLIST;
+    }
+    // the latest matched target
+    public class InterestPoint implements Serializable {
+        public String label;
+        public int weight;
+        public String name;
+        public List<Integer> total_entry;
+    }
+
+
+
+    public HashMap<String, ArrayList<Token> > table_;
+    public ArrayList<entry> entries_;
+    public HashMap<String, Integer> entry_idx_;
+    public ArrayList<InterestPoint> IPList_;
+
+    public StringMatch () {
         table_ = new HashMap<String, ArrayList<Token> >();
         entries_ = new ArrayList<entry>();
         entry_idx_ = new  HashMap<String, Integer>();
@@ -61,6 +72,62 @@ public class StringMatch {
             LoadFileWithOneLable(folder + "\\" + filelist[i], label);
         }
     }
+
+    // used to add the tag not need to word break
+    public void LoadOneItemIP(List<String> list, String label) {
+        int idx = 1;
+        for (String s : list) {
+            InterestPoint ip = new InterestPoint();
+            ip.label = label;
+            ip.total_entry = new ArrayList<Integer>();
+            IPList_.add(ip);
+
+            String[] items = s.split("\t");
+            ip.name = items[0];
+            ip.weight = idx;
+            idx++;
+            Integer entry_idx = AddOneItem(items[0], ip, IPList_.size() - 1 );
+            ip.total_entry.add(entry_idx);
+        }
+    }
+
+    public  void LoadMultiItemIP(List<String> list, String label, int name_idx) {
+        int idx = 1;
+        for (String s : list) {
+            String[] items = s.split("\t");
+            if (items[name_idx].length() < 4) {
+                continue;
+            }
+            InterestPoint ip = new InterestPoint();
+            ip.label = label;
+            ip.total_entry = new ArrayList<Integer>();
+            IPList_.add(ip);
+
+
+            ip.name = items[name_idx];
+            ip.weight =  Integer.parseInt(items[0]);
+            idx ++;
+            //List<Term> temp= NlpAnalysis.parse(ip.name);
+            List<String> temp = MakeTripleList(ip.name);
+            for (String t : temp) {
+                Integer entry_idx = AddOneItem(t, ip, IPList_.size() - 1);
+                ip.total_entry.add(entry_idx);
+            }
+        }
+    }
+
+    public List<String> MakeTripleList(String line) {
+        List<String> res = new ArrayList<String>();
+        if (line.length() <= 3) {
+            res.add(line);
+            return res;
+        }
+        for (int i = 0; i < line.length() - 2; ++i) {
+            res.add(line.substring(i, i +  3));
+        }
+        return res;
+    }
+
 
     public void LoadFileWithOneLable(String file_path, String type)  throws FileNotFoundException, IOException {
         BufferedReader br = new BufferedReader(new FileReader(file_path));
@@ -131,29 +198,33 @@ public class StringMatch {
             entry_idx = entry_idx_.get(sub_name);
             item = entries_.get(entry_idx);
             item.related_IPLIST.add(ip_idx);
+            int i = 0;
+            i++;
         } else {
             item = new entry();
             item.sub_name = sub_name;
             item.related_IPLIST = new ArrayList<Integer>();
+            item.related_IPLIST.add(ip_idx);
             entries_.add(item);
             entry_idx = entries_.size() - 1;
             entry_idx_.put(sub_name, entry_idx);
-        }
 
-        for (int i = 0, idx = 0; i < item.sub_name.length(); i = i + token_size_, idx ++) {
-            String token_key = null;
-            Token token = new Token();
-            token.idx = entry_idx;
-            token.location = idx;
-            token.length = item.sub_name.length() / token_size_ + (item.sub_name.length() % token_size_ != 0 ? 1 : 0);
-            if (i + token_size_ <= item.sub_name.length() - 1) {
-                token_key = item.sub_name.substring(i, i + token_size_);
-                AddItemToMap(token_key, token);
-            } else {
-                token_key = item.sub_name.substring(i, item.sub_name.length());
-                AddItemToMap(token_key, token);
+            for (int i = 0, idx = 0; i < item.sub_name.length(); i = i + token_size_, idx ++) {
+                String token_key = null;
+                Token token = new Token();
+                token.idx = entry_idx;
+                token.location = idx;
+                token.length = item.sub_name.length() / token_size_ + (item.sub_name.length() % token_size_ != 0 ? 1 : 0);
+                if (i + token_size_ <= item.sub_name.length() - 1) {
+                    token_key = item.sub_name.substring(i, i + token_size_);
+                    AddItemToMap(token_key, token);
+                } else {
+                    token_key = item.sub_name.substring(i, item.sub_name.length());
+                    AddItemToMap(token_key, token);
+                }
             }
         }
+
         return  entry_idx;
     }
 
@@ -172,8 +243,8 @@ public class StringMatch {
         for (int i = 0; i < token_size_; ++i) {
             cur_hold.add(new HashMap<Integer, Integer>());
         }
-        System.out.println(cur_hold.size());
-        for (int i = 0; i < context.length(); i = i + token_size_) {
+        //System.out.println(cur_hold.size());
+        for (int i = 0; i < context.length(); i = i + 1) {
             int shard = i % token_size_;
 
             for (int j = 0; j < token_size_ && i + j < context.length(); ++j) {
@@ -203,14 +274,19 @@ public class StringMatch {
             } else {
                 if (token.location == 0) {
                     tmp_map.put(token.idx, 0);
-                }
-                Integer cur_match = map.get(token.idx);
-                if (cur_match != null && cur_match == token.location - 1) {
-                    tmp_map.put(token.idx, token.location);
+                } else {
+                    Integer cur_match = map.get(token.idx);
+                    if (cur_match != null && cur_match == token.location - 1) {
+                        tmp_map.put(token.idx, token.location);
+                    }
                 }
             }
         }
-        map = tmp_map;
+        //map = tmp_map;
+        map.clear();
+        for (Map.Entry<Integer, Integer> kv : tmp_map.entrySet()) {
+            map.put(kv.getKey(), kv.getValue());
+        }
     }
 
     public static void main(String args[]) {
