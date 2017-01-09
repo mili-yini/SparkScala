@@ -62,6 +62,7 @@ public class DocumentAdapter {
             String tmp = one_json.get("update_time").toString();
             Long tmp_long = Long.parseLong(tmp);
             media_doc.setCrawler_timestamp(tmp_long);
+            media_doc.setUpdate_timestamp(tmp_long);
             compositeDoc.setCrawl_time(tmp_long);
         } else {
             return null;
@@ -102,7 +103,7 @@ public class DocumentAdapter {
             dt = s.parse(modify_date);
             // getTime 获取的是毫秒
             long t = dt.getTime() / 1000;
-            media_doc.setUpdate_timestamp(t);   //
+            media_doc.setRelease_timestamp(t);   //
         }
         if (one_json.get("create_time") != null) {
             String creat_date = one_json.get("create_time").toString();
@@ -124,10 +125,10 @@ public class DocumentAdapter {
             media_doc.setContent_timestamp(t);
         } else if (media_doc.isSetCreate_timestamp()) {
             media_doc.setContent_timestamp(media_doc.create_timestamp);
-        } else if (media_doc.isSetUpdate_timestamp()) {
-            media_doc.setContent_timestamp(media_doc.update_timestamp);
+        } else if (media_doc.isSetRelease_timestamp()) {
+            media_doc.setContent_timestamp(media_doc.release_timestamp);
         } else {
-            media_doc.setContent_timestamp(media_doc.update_timestamp);
+            media_doc.setContent_timestamp(media_doc.create_timestamp);
         }
 
         if (one_json.get("description") != null) {
