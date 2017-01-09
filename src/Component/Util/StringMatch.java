@@ -74,7 +74,7 @@ public class StringMatch implements scala.Serializable{
     }
 
     // used to add the tag not need to word break
-    public void LoadOneItemIP(List<String> list, String label) {
+    public void LoadOneItemIP(List<String> list, String label, Integer limit ) {
         int idx = 1;
         for (String s : list) {
             InterestPoint ip = new InterestPoint();
@@ -88,10 +88,13 @@ public class StringMatch implements scala.Serializable{
             idx++;
             Integer entry_idx = AddOneItem(items[0], ip, IPList_.size() - 1 );
             ip.total_entry.add(entry_idx);
+            if (idx >= limit) {
+                break;
+            }
         }
     }
 
-    public  void LoadMultiItemIP(List<String> list, String label, int name_idx) {
+    public  void LoadMultiItemIP(List<String> list, String label, int name_idx, Integer limit) {
         int idx = 1;
         for (String s : list) {
             String[] items = s.split("\t");
@@ -113,6 +116,9 @@ public class StringMatch implements scala.Serializable{
                 Integer entry_idx = AddOneItem(t, ip, IPList_.size() - 1);
                 ip.total_entry.add(entry_idx);
             }
+            if (idx >= limit) {
+                break;
+            }
         }
     }
 
@@ -122,8 +128,8 @@ public class StringMatch implements scala.Serializable{
             res.add(line);
             return res;
         }
-        for (int i = 0; i < line.length() - 2; ++i) {
-            res.add(line.substring(i, i +  3));
+        for (int i = 0; i < line.length() - 1; ++i) {
+            res.add(line.substring(i, i +  2));
         }
         return res;
     }

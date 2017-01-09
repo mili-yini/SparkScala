@@ -3,7 +3,7 @@ package prod
 import java.util.Date
 import javax.naming.Context
 
-import Component.DocumentProcess.GetDoc2VecInput
+import Component.DocumentProcess.{DocumentProcess, GetDoc2VecInput}
 import Component.HBaseUtil.HbashBatch
 import Component.nlp.{MergeNlpFeature, Word2Vector}
 import ldacore.CalLDA
@@ -79,7 +79,8 @@ object HBaseDBExtraction {
     val outputPath_LDA_Word2Vector = ""
     if (need_merge && feature_path != null) {
       mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,feature_path + "//*")
-      mergeLDA
+      val hotTaggedRDD = DocumentProcess.ProcessByMatchHotTag(mergeLDA)
+      hotTaggedRDD
         .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))
         .saveAsTextFile(output_path + "//aggregate_output")
     }
