@@ -68,25 +68,32 @@ object HBaseDBExtraction {
     }
 
     val now = new Date();
-    var now_timestamp : Long = now.getTime();
+    var now_timestamp : Long = now.getTime() / 1000;
     val context: Context = null;
     val compositeDoc=HbashBatch.BatchReadHBaseToRDD(tableName, family, column, sc, startRow, stopRow)
       .map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
       .filter(e=>((freshThreshold==0)||(now_timestamp-e.media_doc_info.crawler_timestamp)<freshThreshold))
       .cache()
+    //println("Debug Count "+compositeDoc.count())
+    //println("now_timestamp " + now_timestamp.toString)
 
     var mergeLDA=compositeDoc
     val outputPath_LDA_Word2Vector = ""
     if (need_merge && feature_path != null) {
+      // this function is used to merge all the feature
       mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,feature_path + "//*")
+      // hot data generation
       val hotTaggedRDD = DocumentProcess.ProcessByMatchHotTag(mergeLDA)
+      // serialize the data
       hotTaggedRDD
         .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))
-        .saveAsTextFile(output_path + "//aggregate_output")
+        .saveAsTextFile(output_path + "//aggregate_output") //this location is used to build index
     }
 
     if (need_doc2vec) {
-      val doc2vec_articles = GetDoc2VecInput.Process(compositeDoc)
+      val doc2vec_articles = {
+        GetDoc2VecInput.Process(compositeDoc)
+      }
       doc2vec_articles.saveAsTextFile(output_path + "//articles")
     }
 

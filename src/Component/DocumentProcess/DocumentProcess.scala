@@ -146,6 +146,7 @@ object DocumentProcess {
       }
 
 
+      val hot_tag = new HashMap[String, Int]
       for (i<-hash_map) {
         val ip = stringMatch.IPList_.get(i._1)
         val total_entry :Double = ip.total_entry.size()
