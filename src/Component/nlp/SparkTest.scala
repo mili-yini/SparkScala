@@ -1,4 +1,7 @@
-package prod
+package Component.nlp
+/**
+  * Created by sunhaochuan on 2017/2/10.
+  */
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -21,19 +24,14 @@ import com.mongodb.hadoop.io.MongoUpdateWritable
 import Component.HBaseUtil.HbashBatch
 import Component.DocumentProcess.DocumentProcess
 import net.sf.json.JSONObject
-//import Component.nlp.Text
 
-/**
-  * Created by jiaokeke1 on 2016/12/28.
-  */
-object Batch {
+object SparkTest {
   def main(args:Array[String]) : Unit = {
     var masterUrl = "local[2]"
     if (args.length > 0) {
       masterUrl = args(0)
     }
     val mongoConfig = new Configuration()
-
     mongoConfig.set("mongo.auth.uri",
       "mongodb://admin:118%23letv.2017@10.154.156.118:27017/admin")
     mongoConfig.set("mongo.input.uri",
@@ -47,35 +45,29 @@ object Batch {
       classOf[Object],            // Key type
       classOf[BSONObject])// Value type
 
-    var tableName = "GalaxyContent"
-    if (args.length > 1) {
-      tableName = args(1);
-    }
-    var family = "info"
-    if (args.length > 2){
-      family = args(2)
-    }
-    var column = "content"
-    if (args.length > 3) {
-      column = args(3)
-    }
-    var mappingTableName = "GalaxyKeyMapping"
-    if (args.length > 4) {
-      mappingTableName = args(4)
-    }
-    var mappingFamily = "info"
-    if (args.length > 5){
-      mappingFamily = args(5)
-    }
-    var mappingColumn = "OriginalKey"
-    if (args.length > 6) {
-      mappingColumn = args(6)
-    }
-    //println("S "+documents.count())
-    val processedRDD = DocumentProcess.ProcessBatch(documents)
-    HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
-      mappingTableName, mappingFamily, mappingColumn)
-    //processedRDD.foreach(e=>println(e))
+
+    val processedRDD = documents.map(line => {
+      val doc: CompositeDoc = DocumentAdapter.FromJsonStringToCompositeDoc(line._2.toString);
+
+      var debug_string = "";
+      if (doc != null) {
+        //add by lujing
+        val text=new Text(doc.media_doc_info.name,doc.description)
+        text.addComopsticDoc(doc)
+
+        debug_string = "url:" + doc.media_doc_info.play_url + " title: " + doc.media_doc_info.normalized_name + "\n";
+
+        debug_string = debug_string + text.Debug();
+
+
+      } else {
+        System.err.println("Failed to parse :" + line._2)
+      }
+
+      debug_string
+    })
+
+    processedRDD.foreach(e=>println(e))
     //println("E "+processedRDD.count())
 
   }

@@ -20,7 +20,9 @@ import java.util.regex.Pattern;
  * Created by lujing1 on 2016/12/19.
  */
 public class Sentence implements Serializable {
+    //分词之后的结果
       private List<Word> words=new ArrayList<Word>();
+    //分词之后的结果拼接成字符串
     String spliteSentence=null;
     public List<Word> getWords() {
         return words;
@@ -37,6 +39,7 @@ public class Sentence implements Serializable {
         }
         return result;
     }
+    //目前只有一种书名号寻找词的方法，正则匹配
     static public void instertTokenWord(String sentence){
         String regex="《(.*?)》";
         Pattern pattern=Pattern.compile(regex);
@@ -49,13 +52,15 @@ public class Sentence implements Serializable {
         }
     }
     public Sentence(String sentence)throws IOException {
+        //动态的构造字典
         instertTokenWord(sentence);
         List<String> keys = new ArrayList<String>();
+        //调用ansj中科院分词器进行分词
         List<Term> temp= NlpAnalysis.parse(sentence);
         StringBuffer sb=new StringBuffer();
         for(Term word:temp){
             int languageId=1;
-            words.add(new Word(word.getName(),word.getNatrue().natureStr,false));
+            words.add(new Word(word.getName(),word.getNatureStr(),false));
             sb.append(word.getName()).append(" ");
         }
         spliteSentence=sb.toString();

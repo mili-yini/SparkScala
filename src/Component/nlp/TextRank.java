@@ -7,7 +7,9 @@ import java.util.*;
  */
 public class TextRank {
     static public Map<String,Double>getTextRank(Text text){
+        //建立词与词之间的关系，建图
         Map<String,Set<String>> wordRelation=getWordRelation(text);
+        // 计算text rank
        Map<String,Double> result=calWordsRank(wordRelation);
 //        if(result.size()==0){
 //            System.out.println("a");
@@ -23,6 +25,7 @@ public class TextRank {
 
             Set<String> words=new HashSet<String>();
             for(Word word:sentence.getWords()){
+                //只对名词建图
                 if(!word.getNature().startsWith("n")){
                     continue;
                 }

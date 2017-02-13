@@ -21,8 +21,10 @@ public class Text implements Serializable {
     List<String> spliteSentences=new ArrayList<String>();
     String spliteTitle=null;
     Sentence titleSentence=null;
+    // 用来存放分词器中输出的命名实体
     List<String> keyWords=new ArrayList<String>();
     BigInteger simHash=new BigInteger("-1");
+    // used to add the NLP analyze result to CompositeDoc
     public void addComopsticDoc(CompositeDoc doc){
         //添加textrank
         for(String word:wordTextRank.keySet()){
@@ -83,9 +85,10 @@ public class Text implements Serializable {
     }
     public Text(String title,String text) throws IOException {
         //处理正文
-
+        // ss代表正文
         String[] ss=null;
         if(text!=null){
+            //将正文通过标点符号分句子
            ss=text.split(dot);
         }else{
             ss=new String[1];
@@ -93,6 +96,7 @@ public class Text implements Serializable {
         }
         //处理正文 存储分词后的句子
         for(String sentence:ss){
+            // sentence 字符串转化为自定义的类型，包含分词
             Sentence sen=new Sentence(sentence);
             sentences.add(sen);
             spliteSentences.add(sen.spliteSentence);
@@ -106,8 +110,10 @@ public class Text implements Serializable {
         //计算tf
         getTF();
         this.simHash=SimHash.simHash(this.tf,128);
+        // 从分词器的结果中取人名，地名，机构名，等作为命名实体
         for(Sentence sen:this.sentences){
           for(Word word:sen.getWords()){
+            // nature 代表word的词性
             String nature=word.getNature();
             boolean flag1=nature.equals("nr")||nature.equals("ns")||nature.equals("nz");
             if(flag1){
@@ -131,5 +137,28 @@ public class Text implements Serializable {
         sb.append("\n");
         return sb.toString();
     }
+
+    public String Debug() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("text rank: ");
+        for (String word :wordTextRank.keySet()
+             ) {
+            sb.append(word + " ");
+        }
+        sb.append("\n");
+
+        sb.append("entity: ");
+        for (String word : keyWords) {
+            sb.append(word + " ");
+        }
+        sb.append("\n");
+
+        sb.append("spliteTitle: ");
+        sb.append(this.spliteTitle);
+        sb.append("\n");
+
+        return sb.toString();
+    }
+
 
 }

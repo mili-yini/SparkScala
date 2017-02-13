@@ -12,25 +12,31 @@ import scala.collection.mutable.ArrayBuffer
   */
 object Word2Vector {
   def getEntityRelation(rdd:RDD[CompositeDoc],outputPath:String):Unit={
+    // 计算word2vec模型
     val model=getWordVector(rdd)
+    // computer the similarity for each word
     val result=getEntityRelation(model,rdd)
     val sc=rdd.sparkContext
+    // save or output the result
     if(outputPath.length>0){
        sc.parallelize(result).saveAsObjectFile(outputPath)
     }else{
       sc.parallelize(result).foreach(println(_))
     }
   }
+  //
   def getEntityRelation(model:Word2VecModel,rdd:RDD[CompositeDoc]):Array[(String,String,Double)]={
     val entityWords=rdd.flatMap(_.feature_list.map(e=>(e.name,1)))
       .reduceByKey(_+_).map(e=>e._1).collect().toSet
-    val model=getWordVector(rdd )
+//    val model=getWordVector(rdd )
     val result=ArrayBuffer[(String,String,Double)]()
+    // find the nearest entity word for every word
     for(word<-entityWords){
       result.appendAll(model.findSynonyms(word,100).filter(e=>entityWords.contains(e._1)).map(e=>(word,e._1,e._2)))
     }
     result.toArray
   }
+  // used to build  the word2vec model
   def getWordVector(rdd:RDD[CompositeDoc]):Word2VecModel={
     val input = rdd.flatMap(_.body_words).map(_.split(" ").toSeq)
     val word2vec = new Word2Vec()
