@@ -37,7 +37,7 @@ object Batch {
     mongoConfig.set("mongo.auth.uri",
       "mongodb://admin:118%23letv.2017@10.154.156.118:27017/admin")
     mongoConfig.set("mongo.input.uri",
-      "mongodb://10.154.156.118:27017/galaxy.content_access");
+      "mongodb://10.154.156.118:27017/galaxy.content_access_new");
     val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
     val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
 
@@ -72,6 +72,9 @@ object Batch {
       mappingColumn = args(6)
     }
     //println("S "+documents.count())
+
+
+
     val processedRDD = DocumentProcess.ProcessBatch(documents)
     HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
       mappingTableName, mappingFamily, mappingColumn)

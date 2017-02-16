@@ -20,7 +20,7 @@ object TestBatch {
     }
     val mongoConfig = new Configuration()
     mongoConfig.set("mongo.input.uri",
-      "mongodb://10.154.156.118:27017/galaxy.content_access")
+      "mongodb://10.154.156.118:27017/galaxy.content_access_new")
     val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
     val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
 
@@ -54,7 +54,6 @@ object TestBatch {
     if (args.length > 6) {
       mappingColumn = args(6)
     }
-    //println("S "+documents.count())
     val processedRDD = DocumentProcess.ProcessBatch(documents)
 //    HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
 //      mappingTableName, mappingFamily, mappingColumn)

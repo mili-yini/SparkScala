@@ -24,6 +24,7 @@ public class Text implements Serializable {
     // 用来存放分词器中输出的命名实体
     List<String> keyWords=new ArrayList<String>();
     BigInteger simHash=new BigInteger("-1");
+    List<String> keyInDict = new ArrayList<String>();
     // used to add the NLP analyze result to CompositeDoc
     public void addComopsticDoc(CompositeDoc doc){
         //添加textrank
@@ -34,16 +35,16 @@ public class Text implements Serializable {
             iF.setName(word);
             iF.setType(FeatureType.LABEL);
 
-            doc.feature_list.add(iF);
+            doc.text_rank.add(iF);
         }
         //添加tf
-        for(String word:tf.keySet()){
+        /*for(String word:tf.keySet()){
             short value=(short)(tf.get(word)*100);
             ItemFeature iF=new ItemFeature();
             iF.setWeight(value);
             iF.setName(word);
             doc.text_rank.add(iF);
-        }
+        }*/
        //添加分词后的正文句子
         for(String sentence:this.spliteSentences){
             doc.body_words.add(sentence);
@@ -55,6 +56,18 @@ public class Text implements Serializable {
         doc.media_doc_info.setName_fingerprint(j);
         //添加关键词
 
+        //添加林鹏词库
+        doc.title_np = new ArrayList<String>() ;
+        for (String key_word : keyInDict) {
+            doc.title_np.add(key_word);
+
+            ItemFeature iF=new ItemFeature();
+            short value = 1;
+            iF.setWeight(value);
+            iF.setName(key_word);
+            iF.setType(FeatureType.NP);
+            doc.feature_list.add(iF);
+        }
     }
     public void getTF(){
         List<Sentence> temp=new ArrayList<Sentence>();
@@ -119,6 +132,10 @@ public class Text implements Serializable {
             if(flag1){
                keyWords.add(word.getText());
             }
+            boolean flag_user_dict = nature.equals("userDefine");
+              if (flag_user_dict) {
+                  keyInDict.add(word.getText());
+              }
           }
         }
     }

@@ -3,7 +3,7 @@ package prod
 import java.util.Date
 import javax.naming.Context
 
-import Component.DocumentProcess.{DocumentProcess, GetDoc2VecInput}
+import Component.DocumentProcess.{DocumentProcess, GetDoc2VecInput, HotDataTagging}
 import Component.HBaseUtil.HbashBatch
 import Component.nlp.{MergeNlpFeature, Word2Vector}
 import ldacore.CalLDA
@@ -83,7 +83,7 @@ object HBaseDBExtraction {
       // this function is used to merge all the feature
       mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,feature_path + "//*")
       // hot data generation
-      val hotTaggedRDD = DocumentProcess.ProcessByMatchHotTag(mergeLDA)
+      val hotTaggedRDD = HotDataTagging.ProcessByMatchHotTag(mergeLDA)
       // serialize the data
       hotTaggedRDD
         .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))

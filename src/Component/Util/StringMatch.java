@@ -94,6 +94,21 @@ public class StringMatch implements scala.Serializable{
         }
     }
 
+    public void LoadTagIP(List<String> list) {
+        for (String s : list) {
+            InterestPoint ip = new InterestPoint();
+            ip.label = s;
+            ip.total_entry = new ArrayList<Integer>();
+            IPList_.add(ip);
+
+            String[] items = s.split("\t");
+            ip.name = items[0];
+            ip.weight = 1;
+            Integer entry_idx = AddOneItem(items[0], ip, IPList_.size() - 1 );
+            ip.total_entry.add(entry_idx);
+        }
+    }
+
     public  void LoadMultiItemIP(List<String> list, String label, int name_idx, Integer limit) {
         int idx = 1;
         for (String s : list) {

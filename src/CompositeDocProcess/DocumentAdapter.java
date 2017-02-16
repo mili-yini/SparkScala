@@ -69,11 +69,13 @@ public class DocumentAdapter {
         }
 
         media_doc.setData_type(DataType.WEB_DOCUMENT);
-        long doc_id ;
-        int mid = media_doc.id.length() / 2;
+        String[] strs = media_doc.id.split("_");
+        long doc_id = Long.parseLong(strs[1]);
+        /*int mid = media_doc.id.length() / 2;
         long h1 = media_doc.id.substring(0, mid).hashCode();
         long h2 = media_doc.id.substring(mid, media_doc.id.length()).hashCode();
-        doc_id = (h1 << 32) + h2;
+        doc_id = (h1 << 32) + h2;*/
+
         compositeDoc.setDoc_id(doc_id);
 
         long ITEM_ID_BITS = ((long)1L << 56) - 1;
@@ -92,7 +94,7 @@ public class DocumentAdapter {
 
         //exchange the id
         compositeDoc.setId(media_doc.id);
-        media_doc.setId(String.valueOf(type_long) + "_"+ String.valueOf(doc_id));
+        //media_doc.setId(String.valueOf(type_long) + "_"+ String.valueOf(doc_id));
 
 
         // not have
