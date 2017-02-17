@@ -67,8 +67,6 @@ object DocumentProcess {
               val text=new Text(doc.media_doc_info.name,doc.description)
               text.addComopsticDoc(doc)
 
-              // add the feature list to media doc info
-              doc.feature_list.map(e=>doc.media_doc_info.feature_list.put(e.name, e))
               id = doc.media_doc_info.id
               val dateFormat = new SimpleDateFormat("yyMMdd")
               val crawler_time = new Date(doc.media_doc_info.crawler_timestamp)
@@ -88,6 +86,8 @@ object DocumentProcess {
 
 
     val processedRDD2 = ToutiaoTagMatcher.ProcessByMatchToutiaoTag(processedRDD1).map(e => {
+      // add the feature list to media doc info
+      e._2.feature_list.map(item => e._2.media_doc_info.feature_list.put(item.name, item))
       val context: Context = null;
       val serialized_string = DocProcess.CompositeDocSerialize.Serialize(e._2, context)
       (e._1, serialized_string, e._3)

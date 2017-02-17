@@ -160,7 +160,8 @@ public class DocumentAdapter {
 
                     // ADD it to feature list
                     ItemFeature item_feature = new ItemFeature();
-                    item_feature.setName("TAG_" + name);
+                    //item_feature.setName("TAG_" + name);
+                    item_feature.setName(name);
                     item_feature.setType(FeatureType.TAG);
                     item_feature.setWeight((short) 1);
                     compositeDoc.feature_list.add(item_feature);
