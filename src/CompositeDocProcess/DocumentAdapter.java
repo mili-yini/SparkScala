@@ -1,6 +1,7 @@
 package CompositeDocProcess;
 
 import DocProcess.CompositeDocSerialize;
+import com.letv.scheduler.thrift.core.ImageInfo;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.hadoop.io.Text;
@@ -43,27 +44,41 @@ public class DocumentAdapter {
         } else {
             return null;
         }
-        if (one_json.get("type_id") != null) {
+        if (one_json.get("c") != null) {
             String type_id = one_json.get("type_id").toString();
             media_doc.setContent_type(Integer.parseInt(type_id));
         }
-        if (one_json.get("title") != null) {
-        media_doc.setName(one_json.get("title").toString());
-        media_doc.setNormalized_name(one_json.get("title").toString());
-        } else {
-            return null;
-         }
-        if (one_json.get("url") != null) {
-            media_doc.setPlay_url(one_json.get("url").toString());
+        // source
+        if (one_json.get("source_id") != null) {
+            compositeDoc.setSource_name(one_json.get("source_id").toString());
         } else {
             return null;
         }
-        if (one_json.get("update_time") != null) {
-            String tmp = one_json.get("update_time").toString();
-            Long tmp_long = Long.parseLong(tmp);
-            media_doc.setCrawler_timestamp(tmp_long);
-            media_doc.setUpdate_timestamp(tmp_long);
-            compositeDoc.setCrawl_time(tmp_long);
+        // mapping category
+        if (one_json.get("category_id") != null) {
+            String category_id = one_json.get("category_id").toString();
+            media_doc.setCategory_name(category_id);
+            // ADD it to feature list
+            ItemFeature item_feature = new ItemFeature();
+            item_feature.setName("CATEGORY_"+category_id);
+            item_feature.setType(FeatureType.CATEGORY);
+            item_feature.setWeight((short)1);
+            compositeDoc.feature_list.add(item_feature);
+        } else {
+            return null;
+        }
+        if (one_json.get("title") != null) {
+            media_doc.setName(one_json.get("title").toString());
+            media_doc.setNormalized_name(one_json.get("title").toString());
+        } else {
+            return null;
+         }
+        if (one_json.get("description") != null) {
+            String description = one_json.get("description").toString();
+            compositeDoc.setDescription(description);
+        }
+        if (one_json.get("url") != null) {
+            media_doc.setPlay_url(one_json.get("url").toString());
         } else {
             return null;
         }
@@ -97,66 +112,56 @@ public class DocumentAdapter {
         //media_doc.setId(String.valueOf(type_long) + "_"+ String.valueOf(doc_id));
 
 
-        // not have
-        if (one_json.get("modify_date") != null) {
-            String modify_date = one_json.get("modify_date").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
-            Date dt = new Date();
-            dt = s.parse(modify_date);
-            // getTime 获取的是毫秒
-            long t = dt.getTime() / 1000;
-            media_doc.setRelease_timestamp(t);   //
-        }
-        if (one_json.get("create_time") != null) {
-            String creat_date = one_json.get("create_time").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
-            Date dt = new Date();
-            dt = s.parse(creat_date);
-            // getTime 获取的是毫秒
-            long t = dt.getTime() / 1000;
-            media_doc.setCreate_timestamp(t);
-        }
-
-        if (one_json.get("publish_date") != null) {
-            String publish_date = one_json.get("publish_date").toString();
+        if (one_json.get("publish_time") != null) {
+            String publish_date = one_json.get("publish_time").toString();
             SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
             Date dt = new Date();
             dt = s.parse(publish_date);
             // getTime 获取的是毫秒
             long t = dt.getTime() / 1000;
-            media_doc.setContent_timestamp(t);
-        } else if (media_doc.isSetCreate_timestamp()) {
-            media_doc.setContent_timestamp(media_doc.create_timestamp);
-        } else if (media_doc.isSetRelease_timestamp()) {
-            media_doc.setContent_timestamp(media_doc.release_timestamp);
+            media_doc.setRelease_timestamp(t);
+        }
+        if (one_json.get("modify_time") != null) {
+            String modify_date = one_json.get("modify_time").toString();
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            Date dt = new Date();
+            dt = s.parse(modify_date);
+            // getTime 获取的是毫秒
+            long t = dt.getTime() / 1000;
+            media_doc.setContent_timestamp(t);   //
         } else {
-            media_doc.setContent_timestamp(media_doc.create_timestamp);
+            return null;
+        }
+        if (one_json.get("crawl_time") != null) {
+            String creat_date = one_json.get("crawl_time").toString();
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            Date dt = new Date();
+            dt = s.parse(creat_date);
+            // getTime 获取的是毫秒
+            long t = dt.getTime() / 1000;
+            media_doc.setCrawler_timestamp(t);
+        } else {
+            return null;
+        }
+        if (one_json.get("update_time") != null) {
+            String creat_date = one_json.get("update_time").toString();
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            Date dt = new Date();
+            dt = s.parse(creat_date);
+            // getTime 获取的是毫秒
+            long t = dt.getTime() / 1000;
+            media_doc.setUpdate_timestamp(t);
+        } else {
+            return null;
         }
 
-        if (one_json.get("description") != null) {
-            String description = one_json.get("description").toString();
-            compositeDoc.setDescription(description);
-        }
-        if (one_json.get("category_id") != null) {
-            String category_id = one_json.get("category_id").toString();
-            media_doc.setCategory_name(category_id);
-            // ADD it to feature list
-            ItemFeature item_feature = new ItemFeature();
-            item_feature.setName("CATEGORY_"+category_id);
-            item_feature.setType(FeatureType.CATEGORY);
-            item_feature.setWeight((short)1);
-            compositeDoc.feature_list.add(item_feature);
-        }
-        if (one_json.get("source_id") != null) {
-            String source_id = one_json.get("source_id").toString();
-            media_doc.setSource(source_id);
-        }
+
         if (one_json.get("tags") != null) {
             JSONArray json_array = JSONArray.fromObject(one_json.get("tags"));
             if (json_array != null) {
                 for (int i = 0; i < json_array.size(); ++i) {
-                    JSONObject one_tag = json_array.getJSONObject(i);
-                    String name = one_tag.get("name").toString();;
+                    //JSONObject one_tag = json_array.getJSONObject(i);
+                    String name = json_array.get(i).toString();;
 
                     // ADD it to feature list
                     ItemFeature item_feature = new ItemFeature();
@@ -168,6 +173,29 @@ public class DocumentAdapter {
                 }
             }
         }
+        // add the image
+        //if (one_json.get("cover_image") != null) {
+            //JSONObject json_info_data = JSONObject.fromObject(one_json.get("info_data"));
+            if (one_json.get("cover_image") != null) {
+                JSONArray json_cover_image = JSONArray.fromObject(one_json.get("cover_image"));
+                compositeDoc.setImg_text_list(new ArrayList<ImageInfo>());
+                if (json_cover_image != null) {
+                    for (int i = 0; i < json_cover_image.size(); ++i) {
+                        JSONObject image = json_cover_image.getJSONObject(i);
+                        ImageInfo info = new ImageInfo();
+                        if (image.get("height") != null) {
+                            info.setHeight(Integer.parseInt(image.get("height").toString()));
+                        }
+                        if (image.get("width") != null) {
+                            info.setWidth(Integer.parseInt(image.get("width").toString()));
+                        }
+                        info.setUrl(image.get("url").toString());
+                        compositeDoc.img_text_list.add(info);
+                    }
+                }
+            }
+        //}
+
          List<ProductCode> pcodes = new ArrayList<ProductCode>();
        // pcodes.add(shared.datatypes.ProductCode.INDIA_IMAGETEXT);       //TODO
         compositeDoc.setPcodes(pcodes);
@@ -190,6 +218,9 @@ public class DocumentAdapter {
         } catch (Exception e) {
             System.err.println("PARSE JSON ERROR:" + json_str);
             e.printStackTrace();
+        }
+        if (doc == null) {
+            System.err.println("Get null json: " + json_str);
         }
         return doc;
         //ret_composite.setDescription(json_str);

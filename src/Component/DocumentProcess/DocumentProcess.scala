@@ -80,7 +80,7 @@ object DocumentProcess {
         }
         result
       }
-    }.filter( x  => x._1 != null)
+    }.filter( x  => {x._1 != null && x._2 != null})
 
     println("processed1:" + processedRDD1.count())
 
