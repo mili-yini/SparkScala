@@ -44,7 +44,7 @@ public class DocumentAdapter {
         } else {
             return null;
         }
-        if (one_json.get("c") != null) {
+        if (one_json.get("type_id") != null) {
             String type_id = one_json.get("type_id").toString();
             media_doc.setContent_type(Integer.parseInt(type_id));
         }
@@ -114,7 +114,7 @@ public class DocumentAdapter {
 
         if (one_json.get("publish_time") != null) {
             String publish_date = one_json.get("publish_time").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:SS");
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date dt = new Date();
             dt = s.parse(publish_date);
             // getTime 获取的是毫秒
@@ -123,7 +123,7 @@ public class DocumentAdapter {
         }
         if (one_json.get("modify_time") != null) {
             String modify_date = one_json.get("modify_time").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date dt = new Date();
             dt = s.parse(modify_date);
             // getTime 获取的是毫秒
@@ -134,7 +134,7 @@ public class DocumentAdapter {
         }
         if (one_json.get("crawl_time") != null) {
             String creat_date = one_json.get("crawl_time").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date dt = new Date();
             dt = s.parse(creat_date);
             // getTime 获取的是毫秒
@@ -145,7 +145,7 @@ public class DocumentAdapter {
         }
         if (one_json.get("update_time") != null) {
             String creat_date = one_json.get("update_time").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date dt = new Date();
             dt = s.parse(creat_date);
             // getTime 获取的是毫秒

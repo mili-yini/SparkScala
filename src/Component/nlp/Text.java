@@ -65,8 +65,14 @@ public class Text implements Serializable {
             short value = 1;
             iF.setWeight(value);
             iF.setName(key_word);
-            iF.setType(FeatureType.NP);
+            //iF.setType(FeatureType.NP);
+            iF.setType(FeatureType.TAG);
             doc.feature_list.add(iF);
+        }
+        //添加分词器中的命名实体
+        doc.title_nnp = new ArrayList<String>();
+        for (String key_word : keyWords) {
+            doc.title_nnp.add(key_word);
         }
     }
     public void getTF(){

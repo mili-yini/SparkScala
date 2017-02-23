@@ -44,7 +44,8 @@ object ToutiaoTagMatcher {
         val item = new ItemFeature()
         item.setName(ip.label)
         item.setWeight(ip.weight.toShort)
-        item.setType(FeatureType.NNP)
+        //item.setType(FeatureType.NNP)
+        item.setType(FeatureType.TAG)
         e._2.feature_list.add(item)
 
         e._2.body_np.add(ip.label)
