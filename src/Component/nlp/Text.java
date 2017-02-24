@@ -128,7 +128,7 @@ public class Text implements Serializable {
         wordTextRank=TextRank.getTextRank(this);
         //计算tf
         getTF();
-        this.simHash=SimHash.simHash(this.tf,128);
+        this.simHash=Text.GetSimHash(title);
         // 从分词器的结果中取人名，地名，机构名，等作为命名实体
         for(Sentence sen:this.sentences){
           for(Word word:sen.getWords()){
@@ -183,5 +183,34 @@ public class Text implements Serializable {
         return sb.toString();
     }
 
+    public static String black_list = " \t\n\r~!@#$%^&*()_+{}|:\"<>?-=[]\\;',./ ！@#￥%……&*（）——+{}|：“《》？-=【】、；‘，。、";
+
+    public static BigInteger GetSimHash(String title) {
+        Map<String,Double> two_gram = new HashMap<String,Double>();
+        for (int i = 0; i < title.length() - 1 ; ++i) {
+            if (black_list.indexOf(title.charAt(i)) != -1) {
+                continue;
+            }
+            if (black_list.indexOf(title.charAt(i + 1)) != -1) {
+                continue;
+            }
+            String tmp = title.substring(i, i + 2);
+            if (two_gram.containsKey(tmp)) {
+                two_gram.put(tmp, two_gram.get(tmp) + 1.0d);
+            } else {
+                two_gram.put(tmp, 1.0d);
+            }
+        }
+
+        return SimHash.simHash(two_gram,64);
+    }
+
+    public static void main(String[] args)
+    {
+        String title1 = "网上惊现高晓松图案抱枕 本人:天生丽质 不追究";
+        String title2 = "网上惊现高晓松图案抱枕 本人：天生丽质 不追究";
+        System.out.println(Text.GetSimHash(title1));
+        System.out.println(Text.GetSimHash(title2));
+    }
 
 }

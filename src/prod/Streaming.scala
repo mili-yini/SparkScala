@@ -41,7 +41,7 @@ object Streaming {
     if (args.length > 2) {
       brokers = args(2);
     }
-    var zookeeper_location = "10.121.145.27:2181,10.121.145.26:2181,10.121.145.25:2181";
+    var zookeeper_location = "10.121.145.24:2181,10.121.145.26:2181,10.121.145.25:2181";
     if (args.length > 3) {
       zookeeper_location = args(3);
     }
