@@ -52,7 +52,7 @@ public class Text implements Serializable {
         //添加分词后的标题
         doc.title_words.add(this.spliteTitle);
         //添加simhash
-        int j=this.simHash.intValue();
+        long j=this.simHash.longValue();
         doc.media_doc_info.setName_fingerprint(j);
         //添加关键词
 
