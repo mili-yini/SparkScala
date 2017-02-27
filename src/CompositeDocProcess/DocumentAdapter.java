@@ -51,6 +51,7 @@ public class DocumentAdapter {
         // source
         if (one_json.get("source_id") != null) {
             compositeDoc.setSource_name(one_json.get("source_id").toString());
+            media_doc.setSource(one_json.get("source_id").toString());
         } else {
             return null;
         }

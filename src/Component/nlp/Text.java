@@ -184,6 +184,7 @@ public class Text implements Serializable {
     }
 
     public static String black_list = " \t\n\r~!@#$%^&*()_+{}|:\"<>?-=[]\\;',./ ！@#￥%……&*（）——+{}|：“《》？-=【】、；‘，。、";
+    public static String black_list1 = " \t";
 
     public static BigInteger GetSimHash(String title) {
         Map<String,Double> two_gram = new HashMap<String,Double>();
@@ -207,10 +208,13 @@ public class Text implements Serializable {
 
     public static void main(String[] args)
     {
-        String title1 = "网上惊现高晓松图案抱枕 本人:天生丽质 不追究";
-        String title2 = "网上惊现高晓松图案抱枕 本人：天生丽质 不追究";
-        System.out.println(Text.GetSimHash(title1));
-        System.out.println(Text.GetSimHash(title2));
+        String title1 = "中国动画电影2016成绩单：13部票房过亿 仅《大鱼海棠》和《熊出没》是国产";
+        String title2 = "中国动画电影2016成绩单：13部票房过亿，仅《大鱼海棠》和《熊出没》2部是国产";
+        BigInteger l1 = Text.GetSimHash(title1);
+        BigInteger l2 = Text.GetSimHash(title2);
+        System.out.println(l1);
+        System.out.println(l2);
+        System.out.println(SimHash.hammingDistance(l1, l2, 64));
     }
 
 }

@@ -1,7 +1,7 @@
 package prod
 
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.{Calendar, Date, GregorianCalendar}
 
 import Component.HBaseUtil.HbaseTool
 import kafka.serializer.StringDecoder
@@ -32,20 +32,6 @@ object Batch {
     if (args.length > 0) {
       masterUrl = args(0)
     }
-    val mongoConfig = new Configuration()
-
-    mongoConfig.set("mongo.auth.uri",
-      "mongodb://admin:118%23letv.2017@10.154.156.118:27017/admin")
-    mongoConfig.set("mongo.input.uri",
-      "mongodb://10.154.156.118:27017/galaxy.content_access_new");
-    val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
-    val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
-
-    val documents = sc.newAPIHadoopRDD(
-      mongoConfig,                // Configuration
-      classOf[MongoInputFormat],  // InputFormat
-      classOf[Object],            // Key type
-      classOf[BSONObject])// Value type
 
     var tableName = "GalaxyContent"
     if (args.length > 1) {
@@ -71,9 +57,44 @@ object Batch {
     if (args.length > 6) {
       mappingColumn = args(6)
     }
+    var time_limit = "";
+    var time_limit_int = 0;
+    if (args.length > 7) {
+      time_limit = args(7)
+      try {
+        time_limit_int = java.lang.Integer.parseInt(time_limit)
+      }
+    }
+    val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss")
+
+
+    val mongoConfig = new Configuration()
+
+    mongoConfig.set("mongo.auth.uri",
+      "mongodb://admin:118%23letv.2017@10.154.156.118:27017/admin")
+    mongoConfig.set("mongo.input.uri",
+      "mongodb://10.154.156.118:27017/galaxy.content_access_new");
+    if (time_limit != null && !time_limit.isEmpty && time_limit_int != 0) {
+      var date  = new java.util.Date();
+      val calendar   =   new   GregorianCalendar();
+      calendar.setTime(date);
+      calendar.add(Calendar.HOUR, 0 - time_limit_int);//把日期往后增加一天.整数往后推,负数往前移动
+      date=calendar.getTime();   //这个时间就是日期往后推一天的结果
+      val time_string = simpleDateFormat.format(date)
+      val input_query = "{\"crawl_time\":{\"$gte\" : \"" + time_string + "\"}}";
+      mongoConfig.set("mongo.input.query", input_query);
+      System.out.println("input, query: " + input_query)
+    }
+    val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
+    val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
+
+    val documents = sc.newAPIHadoopRDD(
+      mongoConfig,                // Configuration
+      classOf[MongoInputFormat],  // InputFormat
+      classOf[Object],            // Key type
+      classOf[BSONObject])// Value type
+
     //println("S "+documents.count())
-
-
 
     val processedRDD = DocumentProcess.ProcessBatch(documents)
     HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
