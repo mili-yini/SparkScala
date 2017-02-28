@@ -27,7 +27,7 @@ object Streaming {
 
     // Create a StreamingContext with the given master URL
     val conf = new SparkConf().setMaster(masterUrl).setAppName("ProdStream")
-    val ssc = new StreamingContext(conf, Seconds(5))
+    val ssc = new StreamingContext(conf, Seconds(30))
 
     // Kafka configurations
     var topics: Set[String] = null;
@@ -49,7 +49,7 @@ object Streaming {
       "metadata.broker.list" -> brokers,
       "serializer.class" -> "kafka.serializer.StringEncoder",
       "zookeeper.connect" -> zookeeper_location,
-       "group.id" -> "spark-streaming-test",
+      "group.id" -> "spark-streaming-test",
       "zookeeper.connection.timeout.ms" -> "30000")
 
     // Create a direct stream
@@ -81,10 +81,17 @@ object Streaming {
     }
 
     kafkaStream.foreachRDD(documents => {
-      val processedRDD = DocumentProcess.ProcessStream(documents)
 
-      HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
-        mappingTableName, mappingFamily, mappingColumn)
+      val input_size = documents.count()
+      if (input_size != 0) {
+        val processedRDD = DocumentProcess.ProcessStream(documents)
+
+        HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
+          mappingTableName, mappingFamily, mappingColumn)
+      } else {
+        println("Get the empty data in Streaming")
+      }
+
     })
 
     ssc.start()

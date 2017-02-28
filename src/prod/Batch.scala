@@ -66,8 +66,6 @@ object Batch {
       }
     }
     val simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss")
-
-
     val mongoConfig = new Configuration()
 
     mongoConfig.set("mongo.auth.uri",
@@ -85,6 +83,9 @@ object Batch {
       mongoConfig.set("mongo.input.query", input_query);
       System.out.println("input, query: " + input_query)
     }
+
+    //mongoConfig.set("mongo.input.query", "{\"info_id\":\"212_8051031210230967516\"}");
+
     val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
     val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
 
