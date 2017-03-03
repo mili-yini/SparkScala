@@ -36,6 +36,11 @@
       <hadoop.version>2.6.0</hadoop.version>
       <hbase.version>1.0.1.1</hbase.version>
   </properties>
+  <resources>
+      <resource>
+
+      </resource>
+  </resources>>
   <dependencies>
       <dependency>
         <groupId>com.letv.search</groupId>

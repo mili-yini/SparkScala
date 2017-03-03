@@ -248,5 +248,8 @@
     <orderEntry type="library" name="HadoopCompositeDoc (2)" level="project" />
     <orderEntry type="library" name="json-lib-2.4-jdk15-javadoc (3)" level="project" />
     <orderEntry type="library" name="scala-sdk-2.10.4" level="application" />
+    <orderEntry type="library" name="ansj_seg-3.0-all-in-one (2)" level="project" />
+    <orderEntry type="library" name="jna-4.3.0" level="project" />
+    <orderEntry type="library" name="jna-3.5.0" level="project" />
   </component>
 </module>
