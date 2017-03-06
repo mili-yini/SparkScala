@@ -17,8 +17,8 @@ public class JNACall {
         CLibrary INSTANCE = (CLibrary)Native.loadLibrary("fasttext", CLibrary.class);
         boolean init_model = false;
 
-        void LoadModel(String file_path);
-        String Predict(String input_text, int k);
+        void LoadModel(String file_path, int idx);
+        String Predict(String input_text, int k, int idx);
     }
 
     public static void RunSystemCommand(String[] command, File file) {
@@ -65,7 +65,7 @@ public class JNACall {
     }
 
     public static void main(String[] args) {
-        CLibrary.INSTANCE.LoadModel("model.bin");
+        CLibrary.INSTANCE.LoadModel("model.bin", 0);
 
         String fileName = "sample.txt";
         File file = new File(fileName);
@@ -78,7 +78,7 @@ public class JNACall {
             //一次读一行，读入null时文件结束
             while ((tempString = reader.readLine()) != null) {
                 //把当前行号显示出来
-                String res =  CLibrary.INSTANCE.Predict(tempString, 10);
+                String res =  CLibrary.INSTANCE.Predict(tempString, 10, 0);
                 System.out.println("case: " + line + ": " + res);
                 line++;
             }
