@@ -1,11 +1,12 @@
 package Component.nlp
 
-import Component.DocumentProcess.DocumentProcess
+import Component.DocumentProcess.{DocumentProcess, FastTextHeadlineTag}
 import Component.HBaseUtil.HbashBatch
 import com.mongodb.hadoop.MongoInputFormat
 import org.apache.hadoop.conf.Configuration
 import org.apache.spark.{SparkConf, SparkContext}
 import org.bson.BSONObject
+
 import scala.collection.JavaConversions._
 //import Component.nlp.Text
 
@@ -54,7 +55,9 @@ object TestBatch {
     if (args.length > 6) {
       mappingColumn = args(6)
     }
-    val processedRDD = DocumentProcess.ProcessBatch(documents)
+    val user_dict = DocumentProcess.UserDictPrepare(sc)
+    val fast_text_library = FastTextHeadlineTag.FastTextPrepare(sc)
+    val processedRDD = DocumentProcess.ProcessBatch(documents, fast_text_library._1, fast_text_library._2)
 //    HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
 //      mappingTableName, mappingFamily, mappingColumn)
     val rddBase64=processedRDD

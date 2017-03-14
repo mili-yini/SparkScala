@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.{HBaseConfiguration, ServerName, TableName}
 import org.apache.hadoop.hbase.client._
 import org.apache.hadoop.hbase.util.Bytes
 import org.apache.spark.Logging
@@ -86,10 +86,54 @@ object HbaseTool extends Logging with Serializable{
     table.delete(new_row)
   }
   def main(args: Array[String]) {
-    val c:Configuration=new Configuration()
-    c.set("hbase.zookeeper.quorum", "10.70.5.26")
-    c.set("hbase.zookeeper.property.clientPort", "2181")
-//    putValue(c,"article_recommended_result","123131232131"+"_"+"1", "recommended",Array(("2016-10-08","12321314343242_article")))
+
+    val conf = HBaseConfiguration.create()
+    conf.set("hbase.zookeeper.property.clientPort", "31818")
+    conf.set("hbase.zookeeper.quorum", "in-cluster-namenode1,in-cluster-namenode2,in-cluster-logserver")
+    conf.set("zookeeper.znode.rootserver", "rs");
+    //conf.set("hbase.rootdir", "hdfs://in-cluster/hbase");
+    conf.set("zookeeper.znode.parent", "/hbase");
+    conf.set("hbase.client.retries.number", "0")
+    //conf.set("hbase.rpc.timeout", "1")
+
+    conf.set("hbase.rootdir", "hdfs://in-cluster/hbase");
+    conf.set("hbase.cluster.distributed", "true")
+    conf.set("hbase.tmp.dir", "/data/hadoop/data9/hbase-tmp")
+
+    println(conf.get("zookeeper.znode.rootserver"))
+    println(conf.get("hbase.zookeeper.quorum"))
+
+    val conn = ConnectionFactory.createConnection(conf)
+
+    /*val admin = conn.getAdmin
+    val clusterStatus = admin.getClusterStatus
+    admin.close()
+
+    val dead_server = clusterStatus.getDeadServerNames
+    val server= clusterStatus.getServers;*/
+
+    try{
+      //获取 user 表
+
+      val userTable = TableName.valueOf("GalaxyContent")
+      val table = conn.getTable(userTable)
+
+      try{
+        //准备插入一条 key 为 id001 的数据
+        val p = new Put("001".getBytes)
+        //为put操作指定 column 和 value （以前的 put.add 方法被弃用了）
+        p.addColumn("value".getBytes,"content".getBytes, "xxxxxxxxxx".getBytes)
+        //提交
+        table.put(p)
+
+
+      }finally {
+        if(table != null) table.close()
+      }
+
+    }finally {
+      conn.close()
+    }
   }
 //  val family = "F"
 }

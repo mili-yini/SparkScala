@@ -2,7 +2,10 @@ package Component.DocumentProcess
 
 import java.util
 
+import Component.Util.JNACall.CLibrary
 import Component.Util.StringMatch
+import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import pipeline.CompositeDoc
 import shared.datatypes.{FeatureType, ItemFeature}
@@ -15,19 +18,29 @@ import scala.collection.JavaConversions._
   * Created by sunhaochuan on 2017/2/16.
   */
 object ToutiaoTagMatcher {
-  def ProcessByMatchToutiaoTag(documents: RDD[(String, CompositeDoc, String)]) : RDD[(String, CompositeDoc, String)] = {
+
+  def FastTextPrepare(sc : SparkContext):  Broadcast[StringMatch] = {
+    val input_toutiao_data = "../lib/model/toutiao_tag.txt"
+    //val input_hot_data_dir = "D:\\Temp\\toutiao_tag.txt"
+
+    StringMatch.sm.LoadFile(input_toutiao_data)
+    val broadcastSm = sc.broadcast(StringMatch.sm)
+
+    val rdd_temp = sc.parallelize("abcccd")
+    rdd_temp.foreach( e => {
+      broadcastSm.value.Match(e.toString)
+    })
+
+    (broadcastSm)
+  }
+
+  def ProcessByMatchToutiaoTag(documents: RDD[(String, CompositeDoc, String)], broadcastSm : Broadcast[StringMatch]) : RDD[(String, CompositeDoc, String)] = {
     val sc = documents.sparkContext
 
-    val input_hot_data_dir = "/data/overseas_in/recommendation/galaxy/toutiao_tag/*"
-    //val input_hot_data_dir = "D:\\Temp\\toutiao_tag.txt"
-    val sm : StringMatch = new StringMatch()
-    val list_toutiao_tag = sc.textFile(input_hot_data_dir).collect().toList
-    sm.LoadTagIP(list_toutiao_tag)
-    val broadcastSm = sc.broadcast(sm)
 
     val result=documents.map{e=>
       val stringMatch = broadcastSm.value
-      val res : List[Integer]  = sm.Match(e._2.media_doc_info.name).toList
+      val res : List[Integer]  = stringMatch.Match(e._2.media_doc_info.name).toList
       val hash_map = new scala.collection.mutable.HashMap[Int, Int]
       for (s<-res) {
         val entry = stringMatch.entries_.get(s)

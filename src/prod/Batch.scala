@@ -19,7 +19,7 @@ import org.bson.BSONObject
 import com.mongodb.hadoop.{BSONFileInputFormat, BSONFileOutputFormat, MongoInputFormat, MongoOutputFormat}
 import com.mongodb.hadoop.io.MongoUpdateWritable
 import Component.HBaseUtil.HbashBatch
-import Component.DocumentProcess.DocumentProcess
+import Component.DocumentProcess.{DocumentProcess, FastTextHeadlineTag}
 import net.sf.json.JSONObject
 //import Component.nlp.Text
 
@@ -97,7 +97,10 @@ object Batch {
 
     //println("S "+documents.count())
 
-    val processedRDD = DocumentProcess.ProcessBatch(documents)
+
+    val user_dict = DocumentProcess.UserDictPrepare(sc)
+    val fast_text_library = FastTextHeadlineTag.FastTextPrepare(sc)
+    val processedRDD = DocumentProcess.ProcessBatch(documents, fast_text_library._1, fast_text_library._2)
     HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
       mappingTableName, mappingFamily, mappingColumn)
     //processedRDD.foreach(e=>println(e))

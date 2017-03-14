@@ -3,6 +3,7 @@ package Component.HBaseUtil
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hbase.{HBaseConfiguration, TableName}
 import org.apache.hadoop.hbase.client.{HTable, Put, Scan}
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat
@@ -98,6 +99,43 @@ object HbashBatch {
       myTable.flushCommits () //关键点3
     }
   }
+    0
+  }
+
+  def BatchWriteToHbaseWithConfig (rdd: RDD[(String,  String)], zookeeper : String, tableName: String, family: String, column: String) : Int = {
+    rdd.foreachPartition(
+      x => {
+
+
+        val myConf : Configuration = HBaseConfiguration.create ()
+        myConf.addResource("./hbase-site.xml")
+        /*myConf.set("hbase.zookeeper.property.clientPort", "31818");
+        myConf.set("hbase.rootdir", "hdfs://in-cluster/hbase");
+        myConf.set("hbase.zookeeper.quorum", zookeeper)
+        myConf.set("hbase.cluster.distributed", "true")
+        myConf.set("hbase.tmp.dir", "/data/hadoop/data9/hbase-tmp")
+        myConf.set("hbase.client.keyvalue.maxsize","524288000");//最大500m
+        myConf.set ("hbase.defaults.for.version.skip", "true")*/
+
+
+
+
+
+        val myTable = new HTable(myConf, TableName.valueOf (tableName))
+        myTable.setAutoFlush (false, false) //关键点1
+        myTable.setWriteBufferSize (10 * 1024 * 1024) //关键点2
+
+        x.foreach(y => {
+          val p = {
+            new Put(Bytes.toBytes(y._1))
+          }
+          p.add(family.getBytes, column.getBytes, y._2.getBytes())
+          myTable.put(p)
+        })
+
+        myTable.flushCommits() //关键点3
+      }
+    )
     0
   }
 

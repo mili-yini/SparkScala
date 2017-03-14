@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import Component.Util.JNACall.CLibrary
-import Component.Util.{JNACall, SocketClient}
+import Component.Util.{JNACall, SocketClient, ZhCnWordProcess}
 import kafka.serializer.StringDecoder
 import org.apache.spark.{SparkConf, SparkFiles}
 import net.sf.json.JSONObject
@@ -49,15 +49,16 @@ object KafkaStreaming {
       "group.id" -> "spark-streaming-test",
       "zookeeper.connection.timeout.ms" -> "30000")
 
-    CLibrary.INSTANCE.LoadModel("model.bin")
+    CLibrary.INSTANCE.LoadModel("model.bin", 0)
+    val broadcastInstance = ssc.sparkContext.broadcast(CLibrary.INSTANCE)
     // Create a direct stream
     val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
 
     println("Start to streaming")
     kafkaStream.foreachRDD(
       rdd => {
-        val sc = rdd.sparkContext
-        val broadcastInstance = sc.broadcast(CLibrary.INSTANCE)
+        //val sc = rdd.sparkContext
+        //val broadcastInstance = sc.broadcast(CLibrary.INSTANCE)
 
         //sc.addFile("libfasttext.so")
         //SparkFiles.get("libfasttext.so")
@@ -66,7 +67,7 @@ object KafkaStreaming {
           val instance : JNACall.CLibrary = broadcastInstance.value
           var scoket = new SocketClient()
           //var res = "";//scoket.OutBandProcessBySocket(line._2.toString())
-          val res: String = instance.Predict(line._2.toString, 10)
+          val res: String = instance.Predict(ZhCnWordProcess.SplitZHCN(line._2.toString), 10, 0)
           (line._2, res)
         }
        )

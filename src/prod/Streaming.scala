@@ -1,6 +1,7 @@
 package prod
 
 import java.text.SimpleDateFormat
+import java.util
 import java.util.Date
 
 import Component.HBaseUtil.{HbaseTool, HbashBatch}
@@ -12,13 +13,24 @@ import CompositeDocProcess.DocumentAdapter
 import pipeline.CompositeDoc
 import javax.naming.Context
 
-import Component.DocumentProcess.DocumentProcess
+import Component.DocumentProcess.{DocumentProcess, FastTextHeadlineTag}
+import Component.Util.JNACall.CLibrary
+import Component.Util.{JNACall, StringMatch, ZhCnWordProcess}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
+import shared.datatypes.{FeatureType, ItemFeature}
 
+import scala.collection.JavaConversions._
+import scala.collection.mutable
 //import Component.nlp.Text
 /**
   * Created by sunhaochuan on 2016/12/16.
   */
 object Streaming {
+
+  var broadcastInstance_t : Broadcast[CLibrary] = null
+  var broadcastSm_t : Broadcast[StringMatch] = null
+
   def main(args: Array[String]): Unit = {
     var masterUrl = "local[2]"
     if (args.length > 0) {
@@ -45,15 +57,6 @@ object Streaming {
     if (args.length > 3) {
       zookeeper_location = args(3);
     }
-    val kafkaParams = Map[String, String](
-      "metadata.broker.list" -> brokers,
-      "serializer.class" -> "kafka.serializer.StringEncoder",
-      "zookeeper.connect" -> zookeeper_location,
-      "group.id" -> "spark-streaming-test",
-      "zookeeper.connection.timeout.ms" -> "30000")
-
-    // Create a direct stream
-    val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
 
     var tableName = "GalaxyContent"
     if (args.length > 4) {
@@ -80,14 +83,43 @@ object Streaming {
       mappingColumn = args(9)
     }
 
+    val kafkaParams = Map[String, String](
+      "metadata.broker.list" -> brokers,
+      "serializer.class" -> "kafka.serializer.StringEncoder",
+      "zookeeper.connect" -> zookeeper_location,
+      "group.id" -> "spark-streaming-test",
+      "zookeeper.connection.timeout.ms" -> "30000")
+
+    val sc = ssc.sparkContext
+
+    val fasttext_library = FastTextHeadlineTag.FastTextPrepare(sc)
+
+    // Create a direct stream
+    val kafkaStream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
+
+    println("Start to streaming")
     kafkaStream.foreachRDD(documents => {
 
-      val input_size = documents.count()
-      if (input_size != 0) {
-        val processedRDD = DocumentProcess.ProcessStream(documents)
+      if (!documents.isEmpty()) {
+        val processedRDD = DocumentProcess.ProcessStream(documents, fasttext_library._1, fasttext_library._2)
 
+        //val processedRDD1 = ProcessLibrary(processedRDD, broadcastInstance, broadcastSm)
         HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
           mappingTableName, mappingFamily, mappingColumn)
+
+        // below is used to debug
+
+        /*processedRDD.map(e => {
+          val context: Context = null;
+          val doc = DocProcess.CompositeDocSerialize.DeSerialize(e._2, context)
+          doc
+        }).foreach(e=>{
+          println("raw input: " + e.classifier_input)
+          println("ft_category_raw_output: " + e.title_NER_person.get(0))
+          println("ft_tag_raw_output: " + e.title_NER_person.get(1))
+        })
+
+        //processedRDD1.map(e=>{(e._1, e._2)}).saveAsHadoopFile("/data/overseas_in/recommendation/pipeline/tmp/test/abc")*/
       } else {
         println("Get the empty data in Streaming")
       }

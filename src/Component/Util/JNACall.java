@@ -11,9 +11,9 @@ import java.io.*;
  */
 public class JNACall {
 
-    public interface CLibrary extends Library {
+    public interface CLibrary extends Library, Serializable {
 
-        String abc = Init();
+        //String abc = Init();
         CLibrary INSTANCE = (CLibrary)Native.loadLibrary("fasttext", CLibrary.class);
         boolean init_model = false;
 
@@ -46,6 +46,7 @@ public class JNACall {
     }
 
     private static String Init() {
+        System.setProperty("jna.encoding", "UTF-8");
         String[] commonds = {"sh", "-c", "export LD_LIBRARY_PATH=./;echo $LD_LIBRARY_PATH"};
         RunSystemCommand(commonds, null);
         System.out.println("Start to load the libary!");

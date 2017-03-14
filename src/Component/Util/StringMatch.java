@@ -21,6 +21,8 @@ import java.util.Map;
 
 public class StringMatch implements scala.Serializable{
 
+    public static StringMatch sm =  new StringMatch();
+
     // used for the matching
     public class Token implements Serializable {
         public int idx;
@@ -179,14 +181,16 @@ public class StringMatch implements scala.Serializable{
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             while ((line = br.readLine()) != null) {
+                InterestPoint ip = new InterestPoint();
+                ip.label = line;
+                ip.total_entry = new ArrayList<Integer>();
+                IPList_.add(ip);
+
                 String[] items = line.split("\t");
-                if (items.length != 2) {
-                    System.exit(-1);
-                }
-                entry e = new entry();
-                e.sub_name = items[0];
-                //e.label = items[1];
-                //AddOneItem(e);
+                ip.name = items[0];
+                ip.weight = 1;
+                Integer entry_idx = AddOneItem(items[0], ip, IPList_.size() - 1 );
+                ip.total_entry.add(entry_idx);
             }
         }catch(Exception e) {
             e.printStackTrace();

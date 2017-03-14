@@ -13,6 +13,9 @@ import java.util.*;
 public class ZhCnWordProcess {
 
     static public String JoinBody(List<String> main_text_list) {
+        if (main_text_list == null) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < main_text_list.size(); ++i) {
             if (i != 0) {
@@ -32,6 +35,10 @@ public class ZhCnWordProcess {
 
 
     static public String SplitZHCN(String input) {
+
+        if (input == null) {
+            return null;
+        }
 
         ArrayList<String> res = new ArrayList<String>();
         int current = 0;
@@ -80,9 +87,16 @@ public class ZhCnWordProcess {
         List<String> res = new ArrayList<String>();
         String[] kv_pairs = raw.split(";");
         for (String kv : kv_pairs) {
+            if (kv.length() == 0) {
+                continue;
+            }
             String[] pair = kv.split(":", 2);
-            if (Double.parseDouble(pair[1]) >= 0.2) {
-                res.add(pair[0]);
+            try {
+                if (Double.parseDouble(pair[1]) >= 0.2) {
+                    res.add(pair[0]);
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return res;
@@ -96,21 +110,28 @@ public class ZhCnWordProcess {
         }
         double top_weight = 0.0f;
         for (int i = 0; i < kv_pairs.length; ++i) {
+            if (kv_pairs[i].length() == 0) {
+                continue;
+            }
             String[] pair = kv_pairs[i].split(":", 2);
             String name = pair[0];
-            double weight = Double.parseDouble(pair[1]);
-            if (i == 0) {
-                top_weight = weight;
-            }
+            try {
+                double weight = Double.parseDouble(pair[1]);
+                if (i == 0) {
+                    top_weight = weight;
+                }
 
-            if (match.get(name) != null) {
-                res.add(name);
-            }
-
-            if (i < 5) {
-                if (weight > 0.005 && weight > top_weight/10) {
+                if (match.get(name) != null) {
                     res.add(name);
                 }
+
+                if (i < 5) {
+                    if (weight > 0.005 && weight > top_weight / 10) {
+                        res.add(name);
+                    }
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
@@ -123,12 +144,27 @@ public class ZhCnWordProcess {
         String line;
         try {
             while ((line = br.readLine()) != null) {
+                //String[] sp = line.split("|", 2);
+                //String input = Base64.decodeBase64(sp[1]).toString();
+                //String label = "__LABEL__" + sp[1];
                 String out = SplitZHCN(line);
                 System.out.println(out);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        /*String text_so_output = "";
+        String title = "";
+        String input_hot_data_dir = "D:\\Temp\\toutiao_tag.txt";
+        StringMatch sm  = new StringMatch();
+        sm.LoadFile(input_hot_data_dir);
+
+        List<Integer> res = sm.Match(title);
+        Map<String, Integer> hash_map = new HashMap<String, Integer>();
+        for (Integer i : res) {
+
+        }*/
 
     }
 }
