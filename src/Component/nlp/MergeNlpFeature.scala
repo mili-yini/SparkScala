@@ -7,9 +7,11 @@ import ldacore.CalLDA
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import pipeline.CompositeDoc
+import shared.datatypes.{FeatureType, ItemFeature}
 
 import collection.JavaConverters._
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 /**
   * Created by lujing1 on 2016/12/20.
@@ -79,6 +81,69 @@ object MergeNlpFeature {
       doc
     }
     result
+  }
+  def mergeFastTexFeature(rdd: RDD[CompositeDoc], outputPath: String): RDD[CompositeDoc] = {
+    val sc = rdd.sparkContext
+    val compositeDoc = rdd.map(e=>(e.media_doc_info.id, e))
+
+    val toutiao_feature = sc.textFile(outputPath).map(e=>e.split("\t")).filter(_.length==3).map(e=> (e(0), e(1) + "\t" +  e(2)))
+    //dedup the duplicate the toutiao tag and return the last one
+    val dedup_toutiaofeature = toutiao_feature.reduceByKey((x,y) => y)
+
+    val join_res = compositeDoc.leftOuterJoin(dedup_toutiaofeature).map{ e=>
+      val doc = e._2._1
+      val f = e._2._2
+
+      doc.body_nnp = new util.ArrayList[String]
+      if (f.isEmpty) {
+        doc.feature_list.map(e => {
+          if(e.getType() == FeatureType.NP) {
+            e.setType(FeatureType.TAG)
+          }
+        }
+        )
+        doc.body_nnp.add("NoJoin")
+      } else {
+
+        val dedup_table = new mutable.HashMap[String, ItemFeature]()
+        doc.feature_list.map(item => {
+          if (item.getType != FeatureType.NP) {
+            dedup_table.put(item.name, item)
+          }
+
+        })
+
+        for (s<-f) {
+          val tags_str = s.split("\t")
+          if (tags_str.size == 2) {
+            val tags = tags_str(1).split(";")
+            for (tag<-tags) {
+              if (!dedup_table.contains(tag)) {
+                val item = new ItemFeature()
+                item.setName(tag)
+                item.setWeight(1)
+                item.setType(FeatureType.TAG)
+                //doc.feature_list.add(item)
+                dedup_table.put(tag, item)
+                doc.body_nnp.add(tag)
+              }
+            }
+          }
+        }
+
+        doc.feature_list.clear()
+        for (kv<-dedup_table) {
+          doc.feature_list.add(kv._2)
+        }
+      }
+
+      doc.media_doc_info.feature_list.clear()
+      doc.feature_list.map(item => doc.media_doc_info.feature_list.put(item.name, item))
+
+      doc
+    }
+
+    join_res
   }
   def main(args: Array[String]): Unit = {
     var masterUrl = "local[2]"

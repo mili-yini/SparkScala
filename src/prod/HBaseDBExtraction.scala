@@ -82,8 +82,10 @@ object HBaseDBExtraction {
     if (need_merge && feature_path != null) {
       // this function is used to merge all the feature
       mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,feature_path + "//*")
+      // merge fasttext tag
+      val mergeFasttext = MergeNlpFeature.mergeFastTexFeature(mergeLDA, "/data/overseas_in/recommendation/galaxy/content_tag/*")
       // hot data generation
-      val hotTaggedRDD = HotDataTagging.ProcessByMatchHotTag(mergeLDA)
+      val hotTaggedRDD = HotDataTagging.ProcessByMatchHotTag(mergeFasttext)
       // serialize the data
       hotTaggedRDD
         .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))

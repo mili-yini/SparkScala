@@ -11,6 +11,7 @@ import pipeline.CompositeDoc
 import shared.datatypes.{FeatureType, ItemFeature}
 
 import scala.collection.immutable.HashMap
+import scala.collection.mutable
 
 // used for java scala type exchange
 import scala.collection.JavaConversions._
@@ -34,9 +35,21 @@ object ToutiaoTagMatcher {
     (broadcastSm)
   }
 
+  def IsIncluded(current: mutable.HashSet[String], tag : String) : Boolean = {
+    var res = false;
+    current.map(e=> {
+      if (e.contains(tag) || tag.contains(e) || e.equals(tag)) {
+        res = true
+      }
+    })
+
+    res
+  }
+
   def ProcessByMatchToutiaoTag(documents: RDD[(String, CompositeDoc, String)], broadcastSm : Broadcast[StringMatch]) : RDD[(String, CompositeDoc, String)] = {
     val sc = documents.sparkContext
 
+    val toutiao_blacklist=Set("花","她","虎", "马")
 
     val result=documents.map{e=>
       val stringMatch = broadcastSm.value
@@ -49,19 +62,34 @@ object ToutiaoTagMatcher {
         }
       }
       e._2.setBody_np(new util.ArrayList[String] )
+
+      // add the feature to feature list
+      val dedup_set = new mutable.HashSet[String]()
+      e._2.feature_list.map(item =>
+      {
+        if (!dedup_set.contains(item.name)) {
+          dedup_set.add(item.name)
+        }
+      })
+
       for (i<-hash_map) {
         val ip = stringMatch.IPList_.get(i._1)
         val total_entry :Double = ip.total_entry.size()
         val match_entry: Double = i._2
 
-        val item = new ItemFeature()
-        item.setName(ip.label)
-        item.setWeight(ip.weight.toShort)
-        //item.setType(FeatureType.NNP)
-        item.setType(FeatureType.TAG)
-        e._2.feature_list.add(item)
-
         e._2.body_np.add(ip.label)
+        if (!dedup_set.contains(ip.label) && !toutiao_blacklist.contains(ip.label) && !IsIncluded(dedup_set, ip.label)) {
+          val item = new ItemFeature()
+          item.setName(ip.label)
+          item.setWeight(ip.weight.toShort)
+          //item.setType(FeatureType.NNP)
+          item.setType(FeatureType.NP)
+          e._2.feature_list.add(item)
+
+          dedup_set.add(ip.label)
+        }
+
+
       }
       (e._1, e._2, e._3)
     }

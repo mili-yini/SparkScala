@@ -28,7 +28,7 @@ public class Text implements Serializable {
     // used to add the NLP analyze result to CompositeDoc
     public void addComopsticDoc(CompositeDoc doc){
         //添加textrank
-        for(String word:wordTextRank.keySet()){
+        /*for(String word:wordTextRank.keySet()){
             short value=(short)(wordTextRank.get(word)*100);
             ItemFeature iF=new ItemFeature();
             iF.setWeight(value);
@@ -36,7 +36,7 @@ public class Text implements Serializable {
             iF.setType(FeatureType.LABEL);
 
             doc.text_rank.add(iF);
-        }
+        }*/
         //添加tf
         /*for(String word:tf.keySet()){
             short value=(short)(tf.get(word)*100);
@@ -61,13 +61,13 @@ public class Text implements Serializable {
         for (String key_word : keyInDict) {
             doc.title_np.add(key_word);
 
-            ItemFeature iF=new ItemFeature();
+            /*ItemFeature iF=new ItemFeature();
             short value = 1;
             iF.setWeight(value);
             iF.setName(key_word);
             //iF.setType(FeatureType.NP);
             iF.setType(FeatureType.TAG);
-            doc.feature_list.add(iF);
+            doc.feature_list.add(iF);*/
         }
         //添加分词器中的命名实体
         doc.title_nnp = new ArrayList<String>();
@@ -125,9 +125,9 @@ public class Text implements Serializable {
         this.titleSentence=titlesen;
         this.spliteTitle=titlesen.spliteSentence;
         //计算textrank
-        wordTextRank=TextRank.getTextRank(this);
+        //wordTextRank=TextRank.getTextRank(this);
         //计算tf
-        getTF();
+        //getTF();
         this.simHash=Text.GetSimHash(title);
         // 从分词器的结果中取人名，地名，机构名，等作为命名实体
         for(Sentence sen:this.sentences){
