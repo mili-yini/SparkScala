@@ -1,5 +1,7 @@
 package Component.DocumentProcess
 
+import java.util.Date
+
 import Component.Util.StringMatch
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
@@ -85,37 +87,44 @@ object HotDataTagging {
 
     val broadcastSm = sc.broadcast(sm)
 
-    val result=documents.map{e=>
-      val stringMatch = broadcastSm.value
-      val res : List[Integer]  = sm.Match(e.media_doc_info.name).toList
-      val hash_map = new scala.collection.mutable.HashMap[Int, Int]
-      for (s<-res) {
-        val entry = stringMatch.entries_.get(s)
-        for (ip<-entry.related_IPLIST){
-          hash_map.put(ip,1+hash_map.getOrElse(ip,0))
+    val result=documents.map { e =>
+      e.media_doc_info.setHotness(0)
+      val now = new Date();
+      var now_timestamp: Long = now.getTime() / 1000;
+      if (now_timestamp - e.media_doc_info.crawler_timestamp <= 24 * 3600) {
+        val stringMatch = broadcastSm.value
+        val res: List[Integer] = sm.Match(e.media_doc_info.name).toList
+        val hash_map = new scala.collection.mutable.HashMap[Int, Int]
+        for (s <- res) {
+          val entry = stringMatch.entries_.get(s)
+          for (ip <- entry.related_IPLIST) {
+            hash_map.put(ip, 1 + hash_map.getOrElse(ip, 0))
+          }
         }
-      }
 
 
-      val hot_tag = new HashMap[String, Int]
-      for (i<-hash_map) {
-        val ip = stringMatch.IPList_.get(i._1)
-        val total_entry :Double = ip.total_entry.size()
-        val match_entry: Double = i._2
+        val hot_tag = new HashMap[String, Int]
+        for (i <- hash_map) {
+          val ip = stringMatch.IPList_.get(i._1)
+          val total_entry: Double = ip.total_entry.size()
+          val match_entry: Double = i._2
 
-        if (match_entry / total_entry >= 0.6) {
-          val item = new ItemFeature()
-          item.setName(ip.label)
-          item.setWeight(ip.weight.toShort)
-          item.setType(FeatureType.HOT_WORD)
-          e.feature_list.add(item)
+          if (match_entry / total_entry >= 0.6) {
+            e.media_doc_info.setHotness(e.media_doc_info.hotness + 1)
+            val item = new ItemFeature()
+            item.setName(ip.label)
+            item.setWeight(ip.weight.toShort)
+            item.setType(FeatureType.HOT_WORD)
+            e.feature_list.add(item)
 
-          println(e.media_doc_info.name)
-          println(item.name +  ":"  + item.weight + ", " + ip.name + ", " + i._2 + ", " + total_entry)
+            println(e.media_doc_info.name)
+            println(item.name + ":" + item.weight + ", " + ip.name + ", " + i._2 + ", " + total_entry)
+          }
         }
       }
       e
     }
+
     result
   }
 

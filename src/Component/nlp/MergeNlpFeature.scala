@@ -82,7 +82,7 @@ object MergeNlpFeature {
     }
     result
   }
-  val toutiao_blacklist=Set("花","她","虎", "马", "桃")
+  val toutiao_blacklist=Set("花","她","虎", "马", "桃", "新闻", "财经", "娱乐", "体育", "搞笑", "文化", "社会", "科技", "军事", "汽车","生活","女性")
   def mergeFastTexFeature(rdd: RDD[CompositeDoc], outputPath: String): RDD[CompositeDoc] = {
     val sc = rdd.sparkContext
     val compositeDoc = rdd.map(e=>(e.media_doc_info.id, e))
