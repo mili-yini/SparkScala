@@ -47,7 +47,7 @@ public class Sentence implements Serializable {
         while(m.find()){
             String word=m.group(1);
             if(word.length()<10){
-                UserDefineLibrary.insertWord(word, "userDefine", 1000);
+                //UserDefineLibrary.insertWord(word, "userDefine", 1000);
             }
         }
     }

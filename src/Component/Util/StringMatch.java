@@ -9,6 +9,7 @@ import scala.*;
 import scala.Serializable;
 
 import java.io.*;
+import java.lang.Float;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
@@ -21,7 +22,45 @@ import java.util.Map;
 
 public class StringMatch implements scala.Serializable{
 
+    public class StringInfo implements scala.Serializable {
+        public HashMap<String, Float> category_info = new  HashMap<String, Float>();
+        public int total_count = 0;
+        public int matche_count = 0;
+        String tag;
+
+        void Parse(String line) {
+            String[] arr = line.split("\t");
+            tag = arr[0];
+            String[] cats = arr[1].split(",");
+            for (String cat : cats) {
+                String[] kv = cat.split(":");
+                category_info.put(kv[0], Float.parseFloat(kv[1]));
+            }
+            total_count = Integer.parseInt(arr[2]);
+            matche_count = Integer.parseInt(arr[3]);
+        }
+    }
+
     public static StringMatch sm =  new StringMatch();
+    public  HashMap<String, StringInfo> sm_info = new HashMap<String, StringInfo>();
+    public void LoadInfo(String file_name) {
+        if (file_name == null || file_name.length() == 0) {
+            return;
+        }
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file_name));
+            String line;
+            while ((line = br.readLine()) != null) {
+                StringInfo si = new StringInfo();
+                si.Parse(line);
+                sm_info.put(si.tag, si);
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+    }
+
 
     // used for the matching
     public class Token implements Serializable {

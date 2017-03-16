@@ -1,5 +1,6 @@
 package Component.DocumentProcess
 
+import java.io.{BufferedReader, FileReader}
 import java.util
 import javax.naming.Context
 
@@ -19,14 +20,18 @@ import scala.collection.mutable
 object FastTextHeadlineTag {
 
   def FastTextPrepare(sc : SparkContext): (Broadcast[CLibrary], Broadcast[StringMatch]) = {
-    CLibrary.INSTANCE.LoadModel("../lib/model/ft_category.bin", 0)
-    CLibrary.INSTANCE.LoadModel("../lib/model/ft_tag.bin", 1)
-    val broadcastInstance = sc.broadcast(CLibrary.INSTANCE)
+    //CLibrary.INSTANCE.LoadModel("../lib/model/ft_category.bin", 0)
+    //CLibrary.INSTANCE.LoadModel("../lib/model/ft_tag.bin", 1)
+    //val broadcastInstance = sc.broadcast(CLibrary.INSTANCE)
+    val broadcastInstance = null;
 
     val input_toutiao_data = "../lib/model/toutiao_tag.txt"
+    //val input_toutiao_data = "D:\\Temp\\tag_info.txt"
     //val input_hot_data_dir = "D:\\Temp\\toutiao_tag.txt"
 
     StringMatch.sm.LoadFile(input_toutiao_data)
+    StringMatch.sm.LoadInfo(input_toutiao_data)
+
     val broadcastSm = sc.broadcast(StringMatch.sm)
 
     /*val rdd_temp = sc.parallelize("abcccd")

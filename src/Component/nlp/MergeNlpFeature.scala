@@ -128,6 +128,18 @@ object MergeNlpFeature {
                 doc.body_nnp.add(tag)
               }
             }
+            val categorys = tags_str(0).split(";")
+            for (category<-categorys) {
+              if (!dedup_table.contains(category)) {
+                val item = new ItemFeature()
+                item.setName(category)
+                item.setWeight(1)
+                item.setType(FeatureType.TAG)
+                //doc.feature_list.add(item)
+                dedup_table.put(category, item)
+                doc.body_nnp.add(category)
+              }
+            }
           }
         }
 
