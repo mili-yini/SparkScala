@@ -82,6 +82,7 @@ object MergeNlpFeature {
     }
     result
   }
+  val toutiao_blacklist=Set("花","她","虎", "马", "桃")
   def mergeFastTexFeature(rdd: RDD[CompositeDoc], outputPath: String): RDD[CompositeDoc] = {
     val sc = rdd.sparkContext
     val compositeDoc = rdd.map(e=>(e.media_doc_info.id, e))
@@ -96,12 +97,14 @@ object MergeNlpFeature {
 
       doc.body_nnp = new util.ArrayList[String]
       if (f.isEmpty) {
-        doc.feature_list.map(e => {
-          if(e.getType() == FeatureType.NP) {
+        val temp_feature_list = doc.feature_list.map(e => {
+          if(e.getType() == FeatureType.NP && toutiao_blacklist.contains(e.getName()) == false) {
             e.setType(FeatureType.TAG)
           }
+          e
         }
-        )
+        ).filter(e=>(e.getType() != FeatureType.NP))
+        doc.feature_list = temp_feature_list
         doc.body_nnp.add("NoJoin")
       } else {
 
@@ -145,7 +148,9 @@ object MergeNlpFeature {
 
         doc.feature_list.clear()
         for (kv<-dedup_table) {
-          doc.feature_list.add(kv._2)
+          if (toutiao_blacklist.contains(kv._2.getName()) == false) {
+            doc.feature_list.add(kv._2)
+          }
         }
       }
 
