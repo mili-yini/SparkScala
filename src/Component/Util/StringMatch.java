@@ -154,7 +154,7 @@ public class StringMatch implements scala.Serializable{
         int idx = 1;
         for (String s : list) {
             String[] items = s.split("\t");
-            if (items[name_idx].length() < 4) {
+            if (items.length < 4) {
                 continue;
             }
             InterestPoint ip = new InterestPoint();

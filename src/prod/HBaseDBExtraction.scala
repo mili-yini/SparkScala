@@ -11,6 +11,7 @@ import org.apache.spark.ml.feature.Word2Vec
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 import pipeline.CompositeDoc
+import scala.collection.JavaConversions._
 
 /**
   * Created by sunhaochuan on 2016/12/28.
@@ -84,6 +85,15 @@ object HBaseDBExtraction {
       mergeLDA=MergeNlpFeature.mergeLDAFeature(compositeDoc,feature_path + "//*")
       // merge fasttext tag
       val mergeFasttext = MergeNlpFeature.mergeFastTexFeature(mergeLDA, "/data/overseas_in/recommendation/galaxy/content_tag/*")
+
+      /*mergeFasttext.map(e=>{
+        var tag_str:String = ""
+        for(tag<-e.body_nnp) {
+          tag_str = tag_str + " " + tag
+        }
+        (e.media_doc_info.id, e.media_doc_info.play_url, e.media_doc_info.name, tag_str)
+      }).saveAsTextFile(output_path + "//tag_dump")*/
+
       // hot data generation
       val hotTaggedRDD = HotDataTagging.ProcessByMatchHotTag(mergeFasttext)
       // serialize the data

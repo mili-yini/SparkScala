@@ -1,4 +1,5 @@
 package Component.nlp;
+import org.apache.commons.collections.KeyValue;
 import pipeline.CompositeDoc;
 import scala.collection.immutable.Range;
 import serving.mediadocinfo.MediaDocInfo;
@@ -206,15 +207,56 @@ public class Text implements Serializable {
         return SimHash.simHash(two_gram,64);
     }
 
+    public static Map<String,Double> GetCosin(String title) {
+        Map<String,Double> two_gram = new HashMap<String,Double>();
+        for (int i = 0; i < title.length() - 1 ; ++i) {
+            if (black_list.indexOf(title.charAt(i)) != -1) {
+                continue;
+            }
+            if (black_list.indexOf(title.charAt(i + 1)) != -1) {
+                continue;
+            }
+            String tmp = title.substring(i, i + 2);
+            if (two_gram.containsKey(tmp)) {
+                two_gram.put(tmp, two_gram.get(tmp) + 1.0d);
+            } else {
+                two_gram.put(tmp, 1.0d);
+            }
+        }
+        return two_gram;
+    }
+
+    public static double Jaccord(Map<String,Double> a, Map<String,Double> b) {
+
+        double score = 0.0;
+        for (Map.Entry<String, Double> kv : a.entrySet()) {
+            if (b.containsKey(kv.getKey())) {
+                score = score + b.get(kv.getKey()) * kv.getValue();
+            }
+        }
+        double mode_a = 0.0;
+        for (Map.Entry<String, Double> kv : a.entrySet())  {
+            mode_a = mode_a + kv.getValue() * kv.getValue();
+        }
+        double model_b = 0.0;
+        for (Map.Entry<String, Double> kv : b.entrySet()) {
+            model_b = model_b + kv.getValue() * kv.getValue();
+        }
+
+        return score/ Math.sqrt(mode_a*model_b);
+    }
+
     public static void main(String[] args)
     {
-        String title1 = "中国动画电影2016成绩单：13部票房过亿 仅《大鱼海棠》和《熊出没》是国产";
-        String title2 = "中国动画电影2016成绩单：13部票房过亿，仅《大鱼海棠》和《熊出没》2部是国产";
+        String title1 = "\"妖股\"GQY视讯遭砸盘实控人\"跑路\"一日套现2亿元";
+        String title2 = "妖股\"GQY视讯遭砸盘 实控人\"跑路\"一日套现2亿";
         BigInteger l1 = Text.GetSimHash(title1);
         BigInteger l2 = Text.GetSimHash(title2);
         System.out.println(l1);
         System.out.println(l2);
         System.out.println(SimHash.hammingDistance(l1, l2, 64));
+        double s = Jaccord(GetCosin(title1), GetCosin(title2));
+        System.out.println(s);
     }
 
 }
