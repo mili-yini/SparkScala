@@ -83,6 +83,13 @@ public class DocumentAdapter {
         } else {
             return null;
         }
+        if (one_json.get("status") != null) {
+            compositeDoc.setPlay_mark(Integer.parseInt(one_json.get("status").toString()));
+            media_doc.setRisk_level((short)(compositeDoc.play_mark));
+        } else {
+            media_doc.setRisk_level((short)0);
+            compositeDoc.setPlay_mark(0);
+        }
 
         media_doc.setData_type(DataType.WEB_DOCUMENT);
         String[] strs = media_doc.id.split("_");

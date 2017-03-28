@@ -74,6 +74,7 @@ object HBaseDBExtraction {
     val compositeDoc=HbashBatch.BatchReadHBaseToRDD(tableName, family, column, sc, startRow, stopRow)
       .map(e=>DocProcess.CompositeDocSerialize.DeSerialize(e._2, null))
       .filter(e=>((freshThreshold==0)||(now_timestamp-e.media_doc_info.crawler_timestamp)<freshThreshold))
+      .filter(e=>(e.play_mark == 1)) // used by cms
       .cache()
     //println("Debug Count "+compositeDoc.count())
     //println("now_timestamp " + now_timestamp.toString)
