@@ -37,6 +37,7 @@ public class DocumentAdapter {
         compositeDoc.setText_rank(new ArrayList<ItemFeature>());
         compositeDoc.setBody_words(new ArrayList<String>());
         compositeDoc.setTitle_words(new ArrayList<String>());
+        compositeDoc.setTitle_ner(new ArrayList<String>());
         media_doc.setFeature_list(new HashMap<String, ItemFeature>());
         //mast have
         if (one_json.get("info_id") != null) {
@@ -119,7 +120,17 @@ public class DocumentAdapter {
         compositeDoc.setId(media_doc.id);
         //media_doc.setId(String.valueOf(type_long) + "_"+ String.valueOf(doc_id));
 
-
+        if (one_json.get("crawl_time") != null) {
+            String creat_date = one_json.get("crawl_time").toString();
+            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date dt = new Date();
+            dt = s.parse(creat_date);
+            // getTime 获取的是毫秒
+            long t = dt.getTime() / 1000;
+            media_doc.setCrawler_timestamp(t);
+        } else {
+            return null;
+        }
         if (one_json.get("publish_time") != null) {
             String publish_date = one_json.get("publish_time").toString();
             SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -136,20 +147,10 @@ public class DocumentAdapter {
             dt = s.parse(modify_date);
             // getTime 获取的是毫秒
             long t = dt.getTime() / 1000;
-            media_doc.setContent_timestamp(t);   //
+               //
+            media_doc.setContent_timestamp(t);
         } else {
-            return null;
-        }
-        if (one_json.get("crawl_time") != null) {
-            String creat_date = one_json.get("crawl_time").toString();
-            SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date dt = new Date();
-            dt = s.parse(creat_date);
-            // getTime 获取的是毫秒
-            long t = dt.getTime() / 1000;
-            media_doc.setCrawler_timestamp(t);
-        } else {
-            return null;
+            media_doc.setContent_timestamp(media_doc.crawler_timestamp);
         }
         if (one_json.get("update_time") != null) {
             String creat_date = one_json.get("update_time").toString();
@@ -162,7 +163,6 @@ public class DocumentAdapter {
         } else {
             return null;
         }
-
 
         if (one_json.get("tags") != null) {
             JSONArray json_array = JSONArray.fromObject(one_json.get("tags"));
@@ -178,6 +178,11 @@ public class DocumentAdapter {
                     item_feature.setType(FeatureType.TAG);
                     item_feature.setWeight((short) 1);
                     compositeDoc.feature_list.add(item_feature);
+                }
+                for (ItemFeature item : compositeDoc.feature_list) {
+                    if (item.type == FeatureType.TAG) {
+                        compositeDoc.title_ner.add(item.name);
+                    }
                 }
             }
         }

@@ -69,9 +69,11 @@ object Batch {
     val mongoConfig = new Configuration()
 
     mongoConfig.set("mongo.auth.uri",
-      "mongodb://admin:118%23letv.2017@10.154.156.118:27017/admin")
+      "mongodb://reader:reader@10.183.99.111:9428/admin")
     mongoConfig.set("mongo.input.uri",
-      "mongodb://10.154.156.118:27017/galaxy.content_access_new");
+      "mongodb://10.183.99.111:9428/galaxy.content_warehouse")
+    mongoConfig.set("mongo.splitter.class",
+      "com.mongodb.hadoop.splitter.SingleMongoSplitter")
     if (time_limit != null && !time_limit.isEmpty && time_limit_int != 0) {
       var date  = new java.util.Date();
       val calendar   =   new   GregorianCalendar();
@@ -84,7 +86,7 @@ object Batch {
       System.out.println("input, query: " + input_query)
     }
 
-    //mongoConfig.set("mongo.input.query", "{\"info_id\":\"212_8051031210230967516\"}");
+    //mongoConfig.set("mongo.input.query", "{\"info_id\":\"212_8772888219584269792\"}");
 
     val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
     val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
