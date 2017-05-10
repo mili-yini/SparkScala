@@ -248,8 +248,8 @@ public class Text implements Serializable {
 
     public static void main(String[] args)
     {
-        String title1 = "\"妖股\"GQY视讯遭砸盘实控人\"跑路\"一日套现2亿元";
-        String title2 = "妖股\"GQY视讯遭砸盘 实控人\"跑路\"一日套现2亿";
+        String title1 = "李治廷曝剧组小狗被撞死发文希望司机能承认错误";
+        String title2 = "李治廷曝剧组小狗翠花被撞死希望司机能承认错误";
         BigInteger l1 = Text.GetSimHash(title1);
         BigInteger l2 = Text.GetSimHash(title2);
         System.out.println(l1);

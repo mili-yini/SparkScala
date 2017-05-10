@@ -27,6 +27,10 @@ import net.sf.json.JSONObject
   * Created by jiaokeke1 on 2016/12/28.
   */
 object Batch {
+  /*val sparkConf = new SparkConf().setAppName("ProdBatch").setMaster("yarn-cluster")
+  lazy val sc = new SparkContext(sparkConf)
+  lazy val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)*/
+
   def main(args:Array[String]) : Unit = {
     var masterUrl = "local[2]"
     if (args.length > 0) {
@@ -91,6 +95,7 @@ object Batch {
     val sparkConf = new SparkConf() //.setMaster(masterUrl).setAppName("ProdBatch")
     val sc = new SparkContext(masterUrl, "ProdBatch", sparkConf)
 
+
     val documents = sc.newAPIHadoopRDD(
       mongoConfig,                // Configuration
       classOf[MongoInputFormat],  // InputFormat
@@ -103,8 +108,9 @@ object Batch {
     val user_dict = DocumentProcess.UserDictPrepare(sc)
     val fast_text_library = FastTextHeadlineTag.FastTextPrepare(sc)
     val processedRDD = DocumentProcess.ProcessBatch(documents, fast_text_library._1, fast_text_library._2)
-    HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
-      mappingTableName, mappingFamily, mappingColumn)
+    processedRDD.saveAsTextFile("/data/rec/recommendation/galaxy/doc_process/batch/data")
+    //HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
+    //  mappingTableName, mappingFamily, mappingColumn)
     //processedRDD.foreach(e=>println(e))
     //println("E "+processedRDD.count())
 

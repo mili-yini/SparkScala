@@ -88,9 +88,12 @@ object MergeNlpFeature {
     val compositeDoc = rdd.map(e=>(e.media_doc_info.id, e))
 
     val toutiao_feature = sc.textFile(outputPath).map(e=>e.split("\t")).filter(_.length==3).map(e=> (e(0), e(1) + "\t" +  e(2)))
+
+    System.out.println("ToutiaoFeatureCount:" + toutiao_feature.count())
     //dedup the duplicate the toutiao tag and return the last one
     val dedup_toutiaofeature = toutiao_feature.reduceByKey((x,y) => y)
 
+    System.out.println("ToutiaoDedupedFeatureCount:" + dedup_toutiaofeature.count())
     val join_res = compositeDoc.leftOuterJoin(dedup_toutiaofeature).map{ e=>
       val doc = e._2._1
       val f = e._2._2

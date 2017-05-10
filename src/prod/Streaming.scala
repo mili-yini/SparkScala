@@ -39,7 +39,7 @@ object Streaming {
 
     // Create a StreamingContext with the given master URL
     val conf = new SparkConf().setMaster(masterUrl).setAppName("ProdStream")
-    val ssc = new StreamingContext(conf, Seconds(30))
+    val ssc = new StreamingContext(conf, Seconds(300))
 
     // Kafka configurations
     var topics: Set[String] = null;
@@ -103,9 +103,11 @@ object Streaming {
       if (!documents.isEmpty()) {
         val processedRDD = DocumentProcess.ProcessStream(documents, fasttext_library._1, fasttext_library._2)
 
+        val strdate=new SimpleDateFormat("yyyy-MM-dd_HHmmss").format(new Date())
+        processedRDD.saveAsTextFile("/data/rec/recommendation/galaxy/doc_process/streaming/" + strdate)
         //val processedRDD1 = ProcessLibrary(processedRDD, broadcastInstance, broadcastSm)
-        HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
-          mappingTableName, mappingFamily, mappingColumn)
+        //HbashBatch.BatchWriteToHBaseWithDesignRowkey(processedRDD, tableName, family, column,
+        //  mappingTableName, mappingFamily, mappingColumn)
 
         // below is used to debug
 

@@ -96,7 +96,8 @@ object HBaseDBExtraction {
       }).saveAsTextFile(output_path + "//tag_dump")*/
 
       // hot data generation
-      val hotTaggedRDD = HotDataTagging.ProcessByMatchHotTag(mergeFasttext)
+      val broadcase_sm = HotDataTagging.FastTextPrepare(sc)
+      val hotTaggedRDD = HotDataTagging.ProcessByMatchHotTag(mergeFasttext, broadcase_sm)
       // serialize the data
       hotTaggedRDD
         .map(e=>(e.media_doc_info.id,DocProcess.CompositeDocSerialize.Serialize(e, context)))

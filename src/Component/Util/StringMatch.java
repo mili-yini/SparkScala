@@ -115,7 +115,39 @@ public class StringMatch implements scala.Serializable{
     }
 
     // used to add the tag not need to word break
+    public void LoadOneItemIP(String file, String label, Integer limit ) {
+        if (file == null || file.length() == 0) {
+            return;
+        }
+        int idx = 1;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String s;
+            while ((s = br.readLine()) != null) {
+                InterestPoint ip = new InterestPoint();
+                ip.label = label;
+                ip.total_entry = new ArrayList<Integer>();
+                IPList_.add(ip);
+
+                String[] items = s.split("\t");
+                ip.name = items[0];
+                ip.weight = idx;
+                idx++;
+                Integer entry_idx = AddOneItem(items[0], ip, IPList_.size() - 1 );
+                ip.total_entry.add(entry_idx);
+                if (idx >= limit) {
+                    break;
+                }
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+    }
     public void LoadOneItemIP(List<String> list, String label, Integer limit ) {
+
+
         int idx = 1;
         for (String s : list) {
             InterestPoint ip = new InterestPoint();
@@ -150,6 +182,43 @@ public class StringMatch implements scala.Serializable{
         }
     }
 
+    public  void LoadMultiItemIP(String file, String label, int name_idx, Integer limit) {
+        if (file == null || file.length() == 0) {
+            return;
+        }
+        int idx = 1;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String s;
+            while ((s = br.readLine()) != null) {
+                String[] items = s.split("\t");
+                if (items.length < 4) {
+                    continue;
+                }
+                InterestPoint ip = new InterestPoint();
+                ip.label = label;
+                ip.total_entry = new ArrayList<Integer>();
+                IPList_.add(ip);
+
+
+                ip.name = items[name_idx];
+                ip.weight =  Integer.parseInt(items[0]);
+                idx ++;
+                //List<Term> temp= NlpAnalysis.parse(ip.name);
+                List<String> temp = MakeTripleList(ip.name);
+                for (String t : temp) {
+                    Integer entry_idx = AddOneItem(t, ip, IPList_.size() - 1);
+                    ip.total_entry.add(entry_idx);
+                }
+                if (idx >= limit) {
+                    break;
+                }
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+    }
     public  void LoadMultiItemIP(List<String> list, String label, int name_idx, Integer limit) {
         int idx = 1;
         for (String s : list) {
