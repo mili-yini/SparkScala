@@ -208,6 +208,21 @@ public class DocumentAdapter {
                 }
             }
         //}
+        // get the hotness
+        if (one_json.get("grade") != null) {
+            String grade_string = one_json.get("grade").toString();
+            Integer grade_value = Integer.valueOf(grade_string);
+
+            // ADD it to feature list
+            ItemFeature item_feature = new ItemFeature();
+            //item_feature.setName("TAG_" + name);
+            item_feature.setName("grade_" + grade_string);
+            item_feature.setType(FeatureType.HOT_WORD);
+            item_feature.setWeight((short) 1);
+            compositeDoc.feature_list.add(item_feature);
+
+            media_doc.setContent_rating_id(grade_value);
+        }
 
          List<ProductCode> pcodes = new ArrayList<ProductCode>();
        // pcodes.add(shared.datatypes.ProductCode.INDIA_IMAGETEXT);       //TODO
